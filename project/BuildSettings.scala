@@ -50,9 +50,15 @@ object BuildSettings {
 
   val _akkaHttpJson4s = ("de.heikoseeberger" %% "akka-http-json4s" % "1.1.0").exclude("org.json4s", "json4s-jackson")
 
+  val _mongoScala = "org.mongodb.scala" %% "mongo-scala-driver" % "1.0.0"
+
   val _json4sJackson = "org.json4s" %% "json4s-jackson" % "3.3.0"
 
   //val _hanlp = "com.hankcs" % "hanlp" % "portable-1.2.4"
+
+  val _jsoup = "org.jsoup" % "jsoup" % "1.8.3"
+
+  val _asyncHttpClient = "com.ning" % "async-http-client" % "1.9.31"
 
   val _logbackClassic = "ch.qos.logback" % "logback-classic" % "1.1.3"
 
