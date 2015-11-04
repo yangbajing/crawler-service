@@ -1,8 +1,8 @@
 package crawler.news.service
 
-import crawler.news.contextextractor.ContentExtractor
 import crawler.news.model.NewsResult
 import crawler.util.http.HttpClient
+import crawler.util.news.contextextractor.ContentExtractor
 import org.jsoup.Jsoup
 
 import scala.concurrent.{ExecutionContext, Future}

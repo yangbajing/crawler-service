@@ -1,4 +1,4 @@
-package crawler.news.contextextractor;
+package crawler.util.news.contextextractor;
 
 import org.jsoup.nodes.Element;
 

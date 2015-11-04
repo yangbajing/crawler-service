@@ -1,0 +1,13 @@
+NewsJob actor: 收到新闻抓取请求，管理新闻抓取状态，数据存储
+    - SearchPageWorker actor: 进行新闻搜索页面抓取，并解析
+    - ItemPageWorker actor: 新闻详情页面抓取，并抽取内容正文
+
+NewsJob actor: 每收到一次新闻抓取请求就实例化一个actor，在actor中再委派SearchPageWorker进行新闻搜索页抓取。
+               新闻搜索页抓取成功后数据回到Job actor，Job actor判断是否需要抓取全文，若是则再委派ItemPageWorker进行全文抓取。
+               NewsJob将保存一个 timeout 超时值，由实例化时参数传入。超时到则向客户返回Timeout请求。而actor则继续等待子actor，
+               如：SearchPageWorker和Seq[ItemPageWorker]执行完（或有错误发生），再停止NewsJob
+               在 postStop 回调函数中进行数据持久化工作。
+
+SearchPageWorker: 根据参数抓取新闻搜索页的新闻列表，并将结果传回给 NewsJob
+
+ItemPageWorker: 根据url抓取新闻详情页正文内容。每条url生成一个actor。抓取成功一条则回传到 NewsJob 中，由 NewsJob 做进一步处理。
