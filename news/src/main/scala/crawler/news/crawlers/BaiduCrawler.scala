@@ -1,10 +1,8 @@
-package crawler.news.service
+package crawler.news.crawlers
 
 import java.net.URLEncoder
 import java.time.LocalDateTime
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
@@ -12,15 +10,15 @@ import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext}
-import scala.collection.JavaConverters._
 
 /**
  * 百度新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-class BaiduNews(val name: String,
+class BaiduCrawler(val name: String,
                 val httpClient: HttpClient)(implicit ec: ExecutionContext) extends NewsCrawler {
 
   import crawler.util.JsoupImplicits._
@@ -37,13 +35,17 @@ class BaiduNews(val name: String,
       a.text(),
       a.attr("href"),
       source.headOption.getOrElse(""),
-      BaiduNews.dealTime(source.lastOption.getOrElse("")),
+      BaiduCrawler.dealTime(source.lastOption.getOrElse("")),
       summary.text().replace(authorText, "").replace(footer, ""),
       "")
   }
 
+  /**
+   * 改成函数，无副作用
+   * @return
+   */
   def fetchNewsList() = {
-    val f = fetchSearchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(name, "UTF-8")))
+    val f = fetchSearchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(name, "UTF-8")))
     f.map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
 
@@ -70,7 +72,7 @@ class BaiduNews(val name: String,
 
 }
 
-object BaiduNews {
+object BaiduCrawler {
   val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=20&ct=1"
   val TIME_PATTERN = """\d{4}年\d{2}月\d{2}日 \d{2}:\d{2}""".r
   val FEW_HOURS_PATTERN = """(\d+)小时前""".r
@@ -95,13 +97,12 @@ object BaiduNews {
   }
 
   def main(args: Array[String]): Unit = {
-    implicit val system = ActorSystem()
-    implicit val materializer = ActorMaterializer()
+    import crawler.SystemUtils._
     implicit val timeout = Timeout(10.hours)
     import system.dispatcher
 
     val httpClient = HttpClient()
-    val baidu = new BaiduNews("杭州今元标矩科技有限公司", httpClient)
+    val baidu = new BaiduCrawler("杭州今元标矩科技有限公司", httpClient)
     val f = baidu.run("c")
     val result = Await.result(f, timeout.duration)
     result.news.foreach(news => println(news.content + "\n\n"))

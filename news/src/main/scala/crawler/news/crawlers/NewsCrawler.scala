@@ -1,13 +1,14 @@
-package crawler.news.service
+package crawler.news.crawlers
 
+import crawler.news.NewsSource
 import crawler.news.model.NewsResult
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
-import org.jsoup.Jsoup
 
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
+ * 新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
 trait NewsCrawler {
@@ -50,4 +51,15 @@ trait NewsCrawler {
   }
 
   def fetchNewsList(): Future[NewsResult]
+}
+
+object NewsCrawler {
+  private var _newsCrawler = Map.empty[NewsSource.Value, NewsCrawler]
+
+  def registerCrawler(key: NewsSource.Value, newsCrawler: NewsCrawler): Unit = {
+    _newsCrawler = _newsCrawler + (key -> newsCrawler)
+  }
+
+  def getCrawler(key: NewsSource.Value): Option[NewsCrawler] = _newsCrawler.get(key)
+
 }

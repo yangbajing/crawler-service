@@ -45,6 +45,9 @@ object Build extends Build {
     .settings(
       description := "util",
       libraryDependencies ++= Seq(
+        _json4sJackson % "provided",
+        _akkaHttpJson4s % "provided",
+        _akkaHttp % "provided",
         _mongoScala,
         _scalaLogging,
         _asyncHttpClient,

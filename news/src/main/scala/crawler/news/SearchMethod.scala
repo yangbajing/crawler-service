@@ -5,9 +5,9 @@ package crawler.news
  * Created by yangjing on 15-11-4.
  */
 object SearchMethod extends Enumeration {
-  // 只取摘要
-  val A = Value
+  // 取摘要
+  val S = Value
 
   // 取全文
-  val B = Value
+  val F = Value
 }
