@@ -4,26 +4,25 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 
 import akka.util.Timeout
-import crawler.news.model.{NewsItem, NewsResult}
+import crawler.news.{SearchMethod, NewsSource}
+import crawler.news.model.{NewsPageItem, NewsItem, NewsResult}
 import crawler.util.http.HttpClient
+import crawler.util.news.contextextractor.ContentExtractor
 import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Future, Await, ExecutionContext}
 
 /**
  * 百度新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-class BaiduCrawler(val name: String,
-                val httpClient: HttpClient)(implicit ec: ExecutionContext) extends NewsCrawler {
+class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) extends NewsCrawler(NewsSource.BAIDU) {
 
   import crawler.util.JsoupImplicits._
-
-  val key = "baidu"
 
   private def parseNewsItem(news: Element): NewsItem = {
     val a = news.findByClass("c-title").first().getElementsByTag("a").first()
@@ -40,17 +39,12 @@ class BaiduCrawler(val name: String,
       "")
   }
 
-  /**
-   * 改成函数，无副作用
-   * @return
-   */
-  def fetchNewsList() = {
-    val f = fetchSearchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(name, "UTF-8")))
-    f.map { resp =>
+  override def fetchNewsList(key: String): Future[NewsResult] =
+    fetchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
 
       if (doc.getElementById("noresult") ne null) {
-        NewsResult(key, name, 0, Nil)
+        NewsResult(newsSource, key, 0, Nil)
       } else {
         val text = doc
           .getElementById("header_top_bar")
@@ -62,13 +56,19 @@ class BaiduCrawler(val name: String,
         val newsDiv = doc.getElementById("content_left") // check null
 
         NewsResult(
+          newsSource,
           key,
-          name,
           count,
           newsDiv.findByClass("result").asScala.map(parseNewsItem).toList)
       }
     }
-  }
+
+  override def fetchNewsItem(url: String): Future[NewsPageItem] =
+    fetchPage(url).map { resp =>
+      val src = resp.getResponseBody("UTF-8")
+      val news = ContentExtractor.getNewsByHtml(src)
+      NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
+    }
 
 }
 
@@ -102,8 +102,8 @@ object BaiduCrawler {
     import system.dispatcher
 
     val httpClient = HttpClient()
-    val baidu = new BaiduCrawler("杭州今元标矩科技有限公司", httpClient)
-    val f = baidu.run("c")
+    val baidu = new BaiduCrawler(httpClient)
+    val f = baidu.run("杭州今元标矩科技有限公司", SearchMethod.F)
     val result = Await.result(f, timeout.duration)
     result.news.foreach(news => println(news.content + "\n\n"))
     println(result.count)

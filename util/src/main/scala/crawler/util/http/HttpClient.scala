@@ -70,8 +70,7 @@ class HttpClient private(config: AsyncHttpClientConfig,
 }
 
 object HttpClient {
-  def apply(): HttpClient =
-    apply(Nil)
+  def apply(): HttpClient = apply(Nil)
 
   def apply(defaultHeaders: Iterable[(String, String)]): HttpClient =
     apply(new AsyncHttpClientConfig.Builder().build, defaultHeaders)
