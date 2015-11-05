@@ -9,10 +9,9 @@ import crawler.news.routes.NewsRoute
  */
 object ApiRoutes {
 
-  def apply(pathname: String) = {
+  def apply(pathname: String) =
     pathPrefix(pathname) {
       NewsRoute("news")
     }
-  }
 
 }

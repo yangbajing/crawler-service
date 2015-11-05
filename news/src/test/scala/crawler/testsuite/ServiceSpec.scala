@@ -2,8 +2,7 @@ package crawler.testsuite
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import crawler.SystemUtils
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 
@@ -20,8 +19,8 @@ abstract class ServiceSpec
   with EitherValues
   with ScalaFutures {
 
-  implicit val system = ActorSystem("service-spec")
-  implicit val materializer = ActorMaterializer()
+  implicit val system = SystemUtils.system
+  implicit val materializer = SystemUtils.materializer
 
   override protected def afterAll(): Unit = {
     system.shutdown()

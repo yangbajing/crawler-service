@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.StrictLogging
+import crawler.SystemUtils
 import crawler.news.service.NewsService
 import crawler.news.{NewsSource, SearchMethod}
 import crawler.util.http.HttpClient
@@ -17,8 +18,7 @@ import scala.util.{Failure, Success}
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
 object NewsRoute extends StrictLogging {
-  val httpClient = HttpClient()
-  val newsService = new NewsService(httpClient)
+  val newsService = new NewsService(SystemUtils.httpClient)
 
   def apply(pathname: String) =
     path(pathname) {
