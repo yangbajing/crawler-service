@@ -24,13 +24,12 @@ class NewsJob(source: NewsSource.Value, method: SearchMethod.Value, duration: Fi
 
   import context.dispatcher
 
-  override def preStart(): Unit = {
-    super.preStart()
+  override def metricPreStart(): Unit = {
     // 定义超时时间
     _cancelableSchedule = context.system.scheduler.scheduleOnce(duration, self, SearchTimeout)
   }
 
-  override def postStop(): Unit = {
+  override def metricPostStop(): Unit = {
     if (!_cancelableSchedule.isCancelled) {
       _cancelableSchedule.cancel()
     }
@@ -41,8 +40,6 @@ class NewsJob(source: NewsSource.Value, method: SearchMethod.Value, duration: Fi
     } else {
       logger.warn("获取新闻失败: " + _newsResult.error)
     }
-
-    super.postStop()
   }
 
   override val metricReceive: Receive = {

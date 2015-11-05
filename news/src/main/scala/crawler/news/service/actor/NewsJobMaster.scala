@@ -1,6 +1,6 @@
 package crawler.news.service.actor
 
-import akka.actor.{ActorRef, Props}
+import akka.actor.{PoisonPill, ActorRef, Props}
 import crawler.news.model.NewsResult
 import crawler.news.{NewsSource, NewsUtils}
 import crawler.news.commands.{RequestSearchNews, SearchNews}
@@ -37,6 +37,9 @@ class NewsJobMaster(sources: Seq[NewsSource.Value]) extends MetricActor {
       _newsResults ::= result
       if (sources.size == _completeJobs) {
         _doSender ! _newsResults
+
+        // TODO 把 NewsJob 内的超时判断上移到 NewsJobMaster ?
+        self ! PoisonPill
       }
 
   }
