@@ -1,8 +1,8 @@
 package crawler.news.service.actors
 
 import akka.actor.{ActorRef, PoisonPill, Props}
-import crawler.news.NewsSource
 import crawler.news.commands.{SearchNews, StartSearchNews}
+import crawler.news.enums.NewsSource
 import crawler.news.model.NewsResult
 import crawler.util.actors.MetricActor
 
@@ -16,11 +16,11 @@ class NewsJob(sources: Seq[NewsSource.Value], reqSender: ActorRef) extends Metri
   @volatile var _newsResults = List.empty[NewsResult]
 
   override val metricReceive: Receive = {
-    case SearchNews(company, method, duration) =>
+    case SearchNews(key, method, duration) =>
       sources.foreach { source =>
         val jobName = source.toString
-        val jobActor = context.actorOf(NewsSourceJob.props(source, method, duration, self), jobName)
-        jobActor ! StartSearchNews(company)
+        val jobActor = context.actorOf(NewsSourceJob.props(source, method, key, duration, self), jobName)
+        jobActor ! StartSearchNews
       }
 
     case result: NewsResult =>

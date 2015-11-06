@@ -2,6 +2,7 @@ package crawler
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 import crawler.util.http.HttpClient
 
 /**
@@ -9,7 +10,10 @@ import crawler.util.http.HttpClient
  * Created by yangjing on 15-11-5.
  */
 object SystemUtils {
-  implicit val system = ActorSystem("crawler")
+  val crawlerConfig = ConfigFactory.load().getConfig("crawler")
+
+  implicit val system = ActorSystem(crawlerConfig.getString("akka-system-name"))
   implicit val materializer = ActorMaterializer()
-  val httpClient = HttpClient()
+
+  val httpClient = HttpClient(crawlerConfig.getConfig("http-client"))
 }

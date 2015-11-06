@@ -1,11 +1,10 @@
 package crawler.news.service.actors
 
 import akka.actor.{ActorRef, Cancellable, PoisonPill, Props}
-import akka.pattern.AskTimeoutException
 import crawler.news.commands._
+import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.NewsResult
 import crawler.news.service.NewsMaster
-import crawler.news.{NewsSource, SearchMethod}
 import crawler.util.actors.MetricActor
 
 import scala.concurrent.duration.FiniteDuration
@@ -14,14 +13,17 @@ import scala.concurrent.duration.FiniteDuration
  * 新闻job
  * @param source 搜索源
  * @param method 搜索方式
+ * @param key 搜索关键词
  * @param duration 持续时间，到期后向未获取完新闻数据向客户端返回Timeout。children actor继续业务处理
+ * @param reqSender 请求actor
  */
 class NewsSourceJob(source: NewsSource.Value,
                     method: SearchMethod.Value,
+                    key: String,
                     duration: FiniteDuration,
                     reqSender: ActorRef) extends MetricActor {
 
-  @volatile var _newsResult: NewsResult = null
+  @volatile var _newsResult = NewsResult(source, "", 0, Nil)
   @volatile var _isTimeout: Boolean = false
   @volatile var _notCompleteItemPageActorNames = Seq.empty[String]
   @volatile var _cancelableSchedule: Cancellable = _
@@ -46,14 +48,14 @@ class NewsSourceJob(source: NewsSource.Value,
   }
 
   override val metricReceive: Receive = {
-    case s@StartSearchNews(key) =>
+    case s@StartSearchNews =>
       val searchPage = context.actorOf(SearchPageWorker.props(source, key), "page")
       searchPage ! StartFetchSearchPage
 
     case SearchResult(newsResult) =>
       _newsResult = newsResult
       method match {
-        case SearchMethod.F => // 需要抓取详情内容
+        case SearchMethod.F if _newsResult.count > 0 => // 需要抓取详情内容
           _notCompleteItemPageActorNames = newsResult.news.zipWithIndex.map { case (item, idx) =>
             val childName = "item-" + idx
             val itemPage = context.actorOf(ItemPageWorker.props(source, item), childName)
@@ -61,7 +63,7 @@ class NewsSourceJob(source: NewsSource.Value,
             childName
           }
 
-        case SearchMethod.S => // 只抓取摘要
+        case _ => // SearchMethod.S => // 只抓取摘要
           if (!_isTimeout) {
             reqSender ! _newsResult
           }
@@ -87,10 +89,10 @@ class NewsSourceJob(source: NewsSource.Value,
     case SearchTimeout =>
       _isTimeout = true
 
-      // 此时向调用客户端返回超时，但实际的新闻抓取流程仍将继续
-      reqSender ! Left(new AskTimeoutException("搜索超时"))
+      // 此时向调用客户端返回已存在的数据，但实际的新闻抓取流程仍将继续
+      reqSender ! _newsResult //Left(new AskTimeoutException("搜索超时"))
 
-    case SearchFailure(key, e) =>
+    case SearchPageFailure(e) =>
       if (!_isTimeout) {
         reqSender ! NewsResult(source, key, -1, Nil, Some(e.getLocalizedMessage))
       }
@@ -102,7 +104,8 @@ class NewsSourceJob(source: NewsSource.Value,
 object NewsSourceJob {
   def props(source: NewsSource.Value,
             method: SearchMethod.Value,
+            key: String,
             duration: FiniteDuration,
             reqSender: ActorRef) =
-    Props(new NewsSourceJob(source, method, duration, reqSender))
+    Props(new NewsSourceJob(source, method, key, duration, reqSender))
 }

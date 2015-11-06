@@ -39,6 +39,7 @@ object BuildSettings {
 
   val verAkka = "2.3.14"
   val _akkaActor = "com.typesafe.akka" %% "akka-actor" % verAkka
+  val _akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % verAkka
 
   val verAkkaHttp = "1.0"
   val _akkaHttpCore = ("com.typesafe.akka" %% "akka-http-core-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
@@ -48,11 +49,13 @@ object BuildSettings {
 
   val _scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
 
-  val _akkaHttpJson4s = ("de.heikoseeberger" %% "akka-http-json4s" % "1.1.0").exclude("org.json4s", "json4s-jackson")
+  val _akkaHttpJson4s = ("de.heikoseeberger" %% "akka-http-json4s" % "1.1.0").excludeAll(ExclusionRule("org.json4s"))
 
   val _mongoScala = "org.mongodb.scala" %% "mongo-scala-driver" % "1.0.0"
 
-  val _json4sJackson = "org.json4s" %% "json4s-jackson" % "3.3.0"
+  val varJson4s = "3.3.0"
+  val _json4sJackson = "org.json4s" %% "json4s-jackson" % varJson4s
+  val _json4sExt = "org.json4s" %% "json4s-ext" % varJson4s
 
   //val _hanlp = "com.hankcs" % "hanlp" % "portable-1.2.4"
 
@@ -62,5 +65,6 @@ object BuildSettings {
 
   val _logbackClassic = "ch.qos.logback" % "logback-classic" % "1.1.3"
 
+  val _cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "2.1.8"
 }
 

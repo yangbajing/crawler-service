@@ -1,6 +1,6 @@
 package crawler.news.crawlers
 
-import crawler.news.{SearchMethod, NewsSource}
+import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
@@ -15,7 +15,7 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
   //  val name: String
   val httpClient: HttpClient
 
-  protected val defaultHeaders = Seq(
+  protected def defaultHeaders = Seq(
     "User-Agent" -> "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36")
 
   protected def fetchPage(url: String) = {
@@ -34,7 +34,18 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
    * @param url 网页链接
    * @return
    */
-  def fetchNewsItem(url: String): Future[NewsPageItem]
+  def fetchNewsItem(url: String)(implicit ec: ExecutionContext): Future[NewsPageItem] =
+    fetchPage(url).map { resp =>
+      val src = resp.getResponseBody("UTF-8")
+      try {
+        val news = ContentExtractor.getNewsByHtml(src)
+        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
+      } catch {
+        case e: Exception =>
+          println(src)
+          NewsPageItem(url, src, "", "", "")
+      }
+    }
 
   def run(name: String, method: SearchMethod.Value)(implicit ec: ExecutionContext): Future[NewsResult] = {
     val newsResult = fetchNewsList(name)

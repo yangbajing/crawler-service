@@ -15,3 +15,42 @@ NewsJob actor: 每收到一次新闻抓取请求就实例化一个actor，在act
 SearchPageWorker: 根据参数抓取新闻搜索页的新闻列表，并将结果传回给 NewsJob
 
 ItemPageWorker: 根据url抓取新闻详情页正文内容。每条url生成一个actor。抓取成功一条则回传到 NewsJob 中，由 NewsJob 做进一步处理。
+
+
+
+DB存储添加索引和查找功能
+
+在case class中加入一个transactionId，记录每一次新闻查询的请求事物。
+
+actor中尽量不传 ActorRef，而通过ActorPath或其它类似机制来查找actor
+
+新闻数据。
+
+使用Cassandra存储，2张表：
+
+create keyspace if not exists crawler_news with replication = {'class': 'SimpleStrategy', 'replication_factor': 2};
+use crawler_news;
+
+create type news_type (
+  url Text,
+  source Text,
+  title Text,
+  datetime Timestamp,
+  summary Text
+);
+create table search_page (
+  key Text,
+  source Text,
+  count Int,
+  news List<frozen <news_type>>,
+  primary key (key, source)
+);
+create table news_page (
+  url Text,
+  source Text,
+  title Text,
+  datetime Timestamp,
+  summary Text,
+  content Text,
+  primary key (url)
+);

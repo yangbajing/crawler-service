@@ -1,7 +1,6 @@
 package crawler.news.commands
 
-import akka.actor.ActorRef
-import crawler.news.{NewsSource, SearchMethod}
+import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsItem, NewsResult}
 
 import scala.concurrent.duration.FiniteDuration
@@ -20,9 +19,8 @@ case class SearchNews(key: String,
 
 /**
  * 开始搜索新闻
- * @param key 搜索关键词
  */
-case class StartSearchNews(key: String)
+case object StartSearchNews
 
 /**
  * 抓取搜索页
@@ -42,10 +40,9 @@ case class SearchResult(news: NewsResult)
 
 /**
  * 搜索失败
- * @param key 搜索关键词
  * @param failure 失败结果
  */
-case class SearchFailure(key: String, failure: Throwable)
+case class SearchPageFailure(failure: Throwable)
 
 /**
  * 开始抓取新闻详情内容

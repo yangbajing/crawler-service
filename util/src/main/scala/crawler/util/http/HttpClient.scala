@@ -1,8 +1,11 @@
 package crawler.util.http
 
+import scala.collection.JavaConverters._
+
 import com.ning.http.client._
 import com.ning.http.client.cookie.Cookie
 import com.ning.http.client.multipart.Part
+import com.typesafe.config.Config
 
 import scala.concurrent.{Future, Promise}
 
@@ -71,6 +74,11 @@ class HttpClient private(config: AsyncHttpClientConfig,
 
 object HttpClient {
   def apply(): HttpClient = apply(Nil)
+
+  def apply(config: Config): HttpClient = {
+    // TODO 解析config to AsyncHttpClientConfig
+    apply(Nil)
+  }
 
   def apply(defaultHeaders: Iterable[(String, String)]): HttpClient =
     apply(new AsyncHttpClientConfig.Builder().build, defaultHeaders)

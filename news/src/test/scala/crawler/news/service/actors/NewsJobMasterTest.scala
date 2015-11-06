@@ -7,9 +7,9 @@ import akka.util.Timeout
 import crawler.SystemUtils
 import crawler.news.commands.{RequestSearchNews, SearchNews}
 import crawler.news.crawlers.{BaiduCrawler, NewsCrawler}
+import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.NewsResult
 import crawler.news.service.NewsMaster
-import crawler.news.{NewsSource, SearchMethod}
 import crawler.testsuite.ServiceSpec
 
 import scala.concurrent.duration._

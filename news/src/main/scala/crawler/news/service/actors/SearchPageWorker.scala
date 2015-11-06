@@ -1,9 +1,9 @@
 package crawler.news.service.actors
 
 import akka.actor.Props
-import crawler.news.NewsSource
-import crawler.news.commands.{SearchFailure, SearchResult, StartFetchSearchPage}
+import crawler.news.commands.{SearchPageFailure, SearchResult, StartFetchSearchPage}
 import crawler.news.crawlers.NewsCrawler
+import crawler.news.enums.NewsSource
 import crawler.util.actors.MetricActor
 
 import scala.util.{Failure, Success}
@@ -26,11 +26,11 @@ class SearchPageWorker(source: NewsSource.Value, key: String) extends MetricActo
             case Success(result) =>
               doSender ! SearchResult(result)
             case Failure(e) =>
-              doSender ! SearchFailure(key, e)
+              doSender ! SearchPageFailure(e)
           }
 
         case None =>
-          doSender ! SearchFailure(key, new RuntimeException(s"Crawler $source not exists"))
+          doSender ! SearchPageFailure(new RuntimeException(s"Crawler $source not exists"))
       }
 
     /*

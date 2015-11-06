@@ -1,4 +1,4 @@
-package crawler.news
+package crawler.news.enums
 
 /**
  * 查找方式

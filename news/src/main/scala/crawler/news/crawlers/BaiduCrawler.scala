@@ -4,17 +4,16 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 
 import akka.util.Timeout
-import crawler.news.{SearchMethod, NewsSource}
-import crawler.news.model.{NewsPageItem, NewsItem, NewsResult}
+import crawler.news.enums.{NewsSource, SearchMethod}
+import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
-import crawler.util.news.contextextractor.ContentExtractor
-import crawler.util.time.TimeUtils
+import crawler.util.time.DateTimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{Future, Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
  * 百度新闻爬虫
@@ -23,6 +22,9 @@ import scala.concurrent.{Future, Await, ExecutionContext}
 class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) extends NewsCrawler(NewsSource.BAIDU) {
 
   import crawler.util.JsoupImplicits._
+
+
+  override protected val defaultHeaders: Seq[(String, String)] = super.defaultHeaders :+ ("User-Agent" -> "Baiduspider")
 
   private def parseNewsItem(news: Element): NewsItem = {
     val a = news.findByClass("c-title").first().getElementsByTag("a").first()
@@ -42,7 +44,7 @@ class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) ex
   override def fetchNewsList(key: String): Future[NewsResult] =
     fetchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
-
+      println(doc)
       if (doc.getElementById("noresult") ne null) {
         NewsResult(newsSource, key, 0, Nil)
       } else {
@@ -63,13 +65,6 @@ class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) ex
       }
     }
 
-  override def fetchNewsItem(url: String): Future[NewsPageItem] =
-    fetchPage(url).map { resp =>
-      val src = resp.getResponseBody("UTF-8")
-      val news = ContentExtractor.getNewsByHtml(src)
-      NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
-    }
-
 }
 
 object BaiduCrawler {
@@ -82,17 +77,18 @@ object BaiduCrawler {
     if (matcher.matches()) matcher.group(1) else ""
   }
 
-  def dealTime(timeStr: String): String = {
+  def dealTime(timeStr: String): LocalDateTime = {
     if (timeStr.length < 2) {
-      LocalDateTime.now().format(TimeUtils.formatterDateTime)
+      LocalDateTime.now()
     } else if (TIME_PATTERN.pattern.matcher(timeStr).matches()) {
-      timeStr.replaceAll( """年|月""", "-").replace("日", "") + ".00"
+      val s = timeStr.replaceAll( """年|月""", "-").replace("日", "") + ":00"
+      LocalDateTime.parse(s, DateTimeUtils.formatterDateTime)
     } else if (FEW_HOURS_PATTERN.pattern.matcher(timeStr).matches()) {
       val now = LocalDateTime.now()
       val hour = dealFewHours(timeStr).toLong
-      now.minusHours(hour).format(TimeUtils.formatterDateTime)
+      now.minusHours(hour)
     } else {
-      LocalDateTime.now().format(TimeUtils.formatterDateTime)
+      LocalDateTime.now()
     }
   }
 

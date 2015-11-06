@@ -1,6 +1,6 @@
 package crawler.news.model
 
-import crawler.news.NewsSource
+import crawler.news.enums.NewsSource
 
 /**
  * 新闻结果

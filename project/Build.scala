@@ -24,7 +24,6 @@ object Build extends Build {
       assemblyJarName in assembly := "crawler-app.jar",
       mainClass in assembly := Some("crawler.app.Main"),
       libraryDependencies ++= Seq(
-        _json4sJackson,
         _akkaHttpJson4s,
         _akkaHttp
       ))
@@ -35,7 +34,6 @@ object Build extends Build {
     .settings(
       description := "news",
       libraryDependencies ++= Seq(
-        _json4sJackson % "provided",
         _akkaHttpJson4s % "provided",
         _akkaHttp % "provided"
       ))
@@ -45,14 +43,17 @@ object Build extends Build {
     .settings(
       description := "util",
       libraryDependencies ++= Seq(
-        _json4sJackson % "provided",
         _akkaHttpJson4s % "provided",
         _akkaHttp % "provided",
-        _mongoScala,
+        _json4sJackson,
+        _json4sExt,
+        //        _mongoScala,
+        _cassandraDriverCore,
         _scalaLogging,
         _asyncHttpClient,
         _jsoup,
         _akkaActor,
+        _akkaSlf4j,
         _logbackClassic
       ))
 }

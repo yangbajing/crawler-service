@@ -1,9 +1,9 @@
 package crawler.news.service.actors
 
 import akka.actor.Props
-import crawler.news.NewsSource
-import crawler.news.commands.{ItemPageResult, SearchFailure, StartFetchItemPage}
+import crawler.news.commands.{ItemPageResult, StartFetchItemPage}
 import crawler.news.crawlers.NewsCrawler
+import crawler.news.enums.NewsSource
 import crawler.news.model.NewsItem
 import crawler.util.actors.MetricActor
 
@@ -28,11 +28,11 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
               doSender ! ItemPageResult(newsItem.copy(content = pageItem.content))
 
             case Failure(e) =>
-              doSender ! SearchFailure(newsItem.url, e)
+              doSender ! ItemPageResult(newsItem.copy(error = Some(e.getLocalizedMessage)))
           }
 
         case None =>
-          doSender ! SearchFailure(newsItem.url, new RuntimeException(s"Crawler $source not exists, ${newsItem.url} needed."))
+          doSender ! ItemPageResult(newsItem.copy(error = Some(s"Crawler $source not exists, ${newsItem.url} needed.")))
       }
 
     /*

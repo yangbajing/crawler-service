@@ -1,4 +1,4 @@
-package crawler.news
+package crawler.news.enums
 
 /**
  * 新闻来源
