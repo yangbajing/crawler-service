@@ -1,13 +1,14 @@
-package crawler.news.service.actor
+package crawler.news.service.actors
 
 import java.util.concurrent.TimeUnit
 
 import akka.pattern.ask
 import akka.util.Timeout
 import crawler.SystemUtils
-import crawler.news.commands.RequestSearchNews
+import crawler.news.commands.{RequestSearchNews, SearchNews}
 import crawler.news.crawlers.{BaiduCrawler, NewsCrawler}
 import crawler.news.model.NewsResult
+import crawler.news.service.NewsMaster
 import crawler.news.{NewsSource, SearchMethod}
 import crawler.testsuite.ServiceSpec
 
@@ -28,9 +29,10 @@ class NewsJobMasterTest extends ServiceSpec {
 
     "news-master" in {
       val sources = Seq(NewsSource.BAIDU)
-      val newsMaster = system.actorOf(NewsJobMaster.props(sources), "news")
-
-      val f = (newsMaster ? RequestSearchNews("杭州誉存科技有限公司", SearchMethod.F, 3.seconds)).mapTo[Seq[NewsResult]]
+      val newsMaster = system.actorOf(NewsMaster.props, NewsMaster.actorName)
+      val msg = RequestSearchNews(sources, SearchNews("杭州誉存科技有限公司", SearchMethod.F, 3.seconds))
+      
+      val f = (newsMaster ? msg).mapTo[Seq[NewsResult]]
 
       f onSuccess { case list =>
         list.foreach(println)

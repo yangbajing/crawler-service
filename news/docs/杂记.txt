@@ -1,3 +1,7 @@
+NewsMaster -> NewsJob* -> NewsSourceJob* -> SearchPageWorker
+              PersistActor                    -> ItemPageWorker*
+
+
 NewsJob actor: 收到新闻抓取请求，管理新闻抓取状态，数据存储
     - SearchPageWorker actor: 进行新闻搜索页面抓取，并解析
     - ItemPageWorker actor: 新闻详情页面抓取，并抽取内容正文

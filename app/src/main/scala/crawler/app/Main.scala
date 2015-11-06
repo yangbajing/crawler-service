@@ -14,5 +14,6 @@ object Main extends App {
   import SystemUtils._
 
   val config = ConfigFactory.load()
+
   Http().bindAndHandle(ApiRoutes("api"), config.getString("crawler.network.server"), config.getInt("crawler.network.port"))
 }

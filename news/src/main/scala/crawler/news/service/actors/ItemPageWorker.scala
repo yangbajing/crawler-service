@@ -1,4 +1,4 @@
-package crawler.news.service.actor
+package crawler.news.service.actors
 
 import akka.actor.Props
 import crawler.news.NewsSource

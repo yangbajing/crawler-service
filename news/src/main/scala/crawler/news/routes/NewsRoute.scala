@@ -7,7 +7,6 @@ import com.typesafe.scalalogging.StrictLogging
 import crawler.SystemUtils
 import crawler.news.service.NewsService
 import crawler.news.{NewsSource, SearchMethod}
-import crawler.util.http.HttpClient
 import crawler.util.http.JsonSupport._
 
 import scala.concurrent.duration.Duration
