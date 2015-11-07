@@ -1,6 +1,7 @@
 import _root_.sbt.Keys._
 import _root_.sbt._
 import sbtassembly.AssemblyKeys._
+import sbtassembly.{MergeStrategy, PathList}
 
 object Build extends Build {
 
@@ -23,6 +24,12 @@ object Build extends Build {
       description := "app",
       assemblyJarName in assembly := "crawler-app.jar",
       mainClass in assembly := Some("crawler.app.Main"),
+      assemblyMergeStrategy in assembly := {
+        case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.discard
+        case x =>
+          val oldStrategy = (assemblyMergeStrategy in assembly).value
+          oldStrategy(x)
+      },
       libraryDependencies ++= Seq(
         _akkaHttpJson4s,
         _akkaHttp
