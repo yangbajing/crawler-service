@@ -4,9 +4,11 @@ import java.net.URLEncoder
 import java.time.LocalDateTime
 
 import akka.util.Timeout
+import crawler.SystemUtils
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
+import crawler.util.news.contextextractor.ContentExtractor
 import crawler.util.time.DateTimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
@@ -92,14 +94,47 @@ object BaiduCrawler {
     }
   }
 
+  ////////////////////////////////////////////////////////////////////////////
+  // 以下为测试用例
+  ////////////////////////////////////////////////////////////////////////////
+
+  def run(newsCrawler: NewsCrawler,
+          name: String,
+          method: SearchMethod.Value)(implicit ec: ExecutionContext): Future[NewsResult] = {
+    val newsResult = newsCrawler.fetchNewsList(name)
+    if (SearchMethod.S == method) {
+      newsResult
+    } else {
+      newsResult.flatMap { result =>
+        val seqs = result.news.map { news =>
+          newsCrawler.fetchPage(news.url).map { resp =>
+            (news.url, ContentExtractor.getNewsByHtml(resp.getResponseBody("UTF-8")).getContent)
+          }
+        }
+        val f = Future.sequence(seqs)
+        f.map { urlContents =>
+          val news = result.news.map { news =>
+            urlContents.find(_._1 == news.url) match {
+              case Some((_, content)) =>
+                news.copy(content = content)
+              case None =>
+                news
+            }
+          }
+          result.copy(news = news)
+        }
+      }
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    import crawler.SystemUtils._
+    import SystemUtils._
     implicit val timeout = Timeout(10.hours)
     import system.dispatcher
 
     val httpClient = HttpClient()
     val baidu = new BaiduCrawler(httpClient)
-    val f = baidu.run("杭州今元标矩科技有限公司", SearchMethod.F)
+    val f = run(baidu, "杭州今元标矩科技有限公司", SearchMethod.F)
     val result = Await.result(f, timeout.duration)
     result.news.foreach(news => println(news.content + "\n\n"))
     println(result.count)

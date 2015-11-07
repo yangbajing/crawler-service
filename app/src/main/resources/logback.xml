@@ -20,21 +20,6 @@
         </encoder>
     </appender>
 
-    <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/access.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover with compression -->
-            <fileNamePattern>logs/access-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <!-- keep 1 week worth of history -->
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} %message%n</pattern>
-            <!-- this quadruples logging throughput -->
-            <immediateFlush>false</immediateFlush>
-        </encoder>
-    </appender>
-
     <logger name="akka" level="INFO"/>
     <logger name="crawler" level="DEBUG"/>
 

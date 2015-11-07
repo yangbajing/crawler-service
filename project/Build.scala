@@ -34,8 +34,8 @@ object Build extends Build {
     .settings(
       description := "news",
       libraryDependencies ++= Seq(
-        _akkaHttpJson4s % "provided",
-        _akkaHttp % "provided"
+        _akkaHttpJson4s,
+        _akkaHttp
       ))
 
   lazy val util = Project("util", file("util"))

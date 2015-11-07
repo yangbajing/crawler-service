@@ -4,6 +4,7 @@ import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
+import org.jsoup.Jsoup
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,8 +19,14 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
   protected def defaultHeaders = Seq(
     "User-Agent" -> "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36")
 
-  protected def fetchPage(url: String) = {
+  def fetchPage(url: String) = {
     httpClient.get(url).header(defaultHeaders: _*).execute()
+  }
+
+  def fetchDocument(url: String) = {
+    val conn = Jsoup.connect(url)
+    defaultHeaders.foreach { case (name, value) => conn.header(name, value) }
+    conn.execute().parse()
   }
 
   /**
@@ -34,43 +41,25 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
    * @param url 网页链接
    * @return
    */
-  def fetchNewsItem(url: String)(implicit ec: ExecutionContext): Future[NewsPageItem] =
-    fetchPage(url).map { resp =>
-      val src = resp.getResponseBody("UTF-8")
-      try {
-        val news = ContentExtractor.getNewsByHtml(src)
-        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
-      } catch {
-        case e: Exception =>
-          println(src)
-          NewsPageItem(url, src, "", "", "")
-      }
-    }
-
-  def run(name: String, method: SearchMethod.Value)(implicit ec: ExecutionContext): Future[NewsResult] = {
-    val newsResult = fetchNewsList(name)
-    if (SearchMethod.S == method) {
-      newsResult
-    } else {
-      newsResult.flatMap { result =>
-        val seqs = result.news.map { news =>
-          fetchPage(news.url).map { resp =>
-            (news.url, ContentExtractor.getNewsByHtml(resp.getResponseBody("UTF-8")).getContent)
-          }
-        }
-        val f = Future.sequence(seqs)
-        f.map { urlContents =>
-          val news = result.news.map { news =>
-            urlContents.find(_._1 == news.url) match {
-              case Some((_, content)) =>
-                news.copy(content = content)
-              case None =>
-                news
-            }
-          }
-          result.copy(news = news)
-        }
-      }
+  def fetchNewsItem(url: String)(implicit ec: ExecutionContext): Future[NewsPageItem] = {
+    //    fetchPage(url).map { resp =>
+    //      val src = resp.getResponseBody("UTF-8")
+    //      try {
+    //        val news = ContentExtractor.getNewsByHtml(src)
+    //        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
+    //      } catch {
+    //        case e: Exception =>
+    //          println(src)
+    //          NewsPageItem(url, src, "", "", "")
+    //      }
+    //    }
+    Future {
+      val document = fetchDocument(url)
+      val news = ContentExtractor.getNewsByDoc(document)
+      NewsPageItem(url, document.toString, news.getTitle, news.getTime, news.getContent)
+    }.recover {
+      case e: Exception =>
+        NewsPageItem(url, "", "", "", "")
     }
   }
 
