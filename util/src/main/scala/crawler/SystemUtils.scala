@@ -4,6 +4,7 @@ import java.nio.charset.Charset
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.ning.http.client.AsyncHttpClientConfig
 import com.typesafe.config.ConfigFactory
 import crawler.util.http.HttpClient
 
@@ -19,5 +20,16 @@ object SystemUtils {
   implicit val system = ActorSystem(crawlerConfig.getString("akka-system-name"))
   implicit val materializer = ActorMaterializer()
 
-  val httpClient = HttpClient(crawlerConfig.getConfig("http-client"))
+  val httpClient = {
+    crawlerConfig.getConfig("http-client")
+    val builder = new AsyncHttpClientConfig.Builder()
+//    builder.setMaxConnections(40)
+//    builder.setMaxConnectionsPerHost(20)
+    builder.setConnectTimeout(10 * 1000)
+    builder.setPooledConnectionIdleTimeout(40 * 1000)
+    builder.setRequestTimeout(90 * 1000)
+    builder.setAllowPoolingConnections(true)
+    builder.setFollowRedirect(true)
+    HttpClient(builder.build(), Nil)
+  }
 }

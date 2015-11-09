@@ -80,9 +80,8 @@ object HttpClient {
 
   def apply(config: Config): HttpClient = {
     // TODO 解析config to AsyncHttpClientConfig
-    val builder = new AsyncHttpClientConfig.Builder()
-    builder.setExecutorService()
-    apply(builder.build(), Nil)
+
+    apply(Nil)
   }
 
   def apply(defaultHeaders: Iterable[(String, String)]): HttpClient =
