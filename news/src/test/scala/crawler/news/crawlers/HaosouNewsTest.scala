@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 /**
  * Created by yangjing on 15-11-9.
  */
-class HaosouCrawlerTest extends ServiceSpec {
+class HaosouNewsTest extends ServiceSpec {
 
   import system.dispatcher
 
@@ -19,7 +19,7 @@ class HaosouCrawlerTest extends ServiceSpec {
   "HaosouCrawlerTest" should {
 
     "fetchNewsList" in {
-      val haosou = new HaosouCrawler(HttpClient())
+      val haosou = new HaosouNews(HttpClient())
       val result = Await.result(haosou.fetchNewsList("誉存科技"), timeout.duration)
       result.news.foreach(println)
       println(result.source + " " + result.key)

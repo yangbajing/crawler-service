@@ -21,7 +21,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
  * 百度新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU) {
+class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU) {
 
   import crawler.util.JsoupImplicits._
 
@@ -37,12 +37,12 @@ class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BA
       a.text(),
       a.attr("href"),
       source.headOption.getOrElse(""),
-      BaiduCrawler.dealTime(source.lastOption.getOrElse("")),
+      BaiduNews.dealTime(source.lastOption.getOrElse("")),
       summary.text().replace(authorText, "").replace(footer, ""))
   }
 
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] =
-    fetchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
+    fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
       val now = DateTimeUtils.now()
 //      println(doc)
@@ -69,7 +69,7 @@ class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BA
 
 }
 
-object BaiduCrawler {
+object BaiduNews {
   val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=20&ct=1"
   val TIME_PATTERN = """\d{4}年\d{2}月\d{2}日 \d{2}:\d{2}""".r
   val FEW_HOURS_PATTERN = """(\d+)小时前""".r
@@ -133,7 +133,7 @@ object BaiduCrawler {
     import system.dispatcher
 
     val httpClient = HttpClient()
-    val baidu = new BaiduCrawler(httpClient)
+    val baidu = new BaiduNews(httpClient)
     val f = run(baidu, "杭州今元标矩科技有限公司", SearchMethod.F)
     val result = Await.result(f, timeout.duration)
     result.news.foreach(news => println(news.content + "\n\n"))

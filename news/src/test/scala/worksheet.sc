@@ -23,3 +23,6 @@ NewsUtils.uriToBaseUri("http://www.chinacourt.org/article/search.shtml")
 DateTimeUtils.toLocalDateTime("2015-04-12 11:46:00")
 "2015-04-12 11:46:00".map(v => (v, v.toInt))
 ' '.toInt
+
+
+"高尚全    2015-11-09 16:09:41".split("    ").toList

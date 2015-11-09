@@ -47,7 +47,7 @@ class NewsSourceJob(source: NewsSource.Value,
     if (null != _newsResult && _newsResult.count > 0) {
       persistActor ! _newsResult
     } else {
-      logger.warn("未获取到相关数据: " + _newsResult.error)
+      logger.warn(self.path + " 未获取到相关数据: " + _newsResult.error)
     }
   }
 
@@ -121,6 +121,7 @@ class NewsSourceJob(source: NewsSource.Value,
       reqSender ! _newsResult //Left(new AskTimeoutException("搜索超时"))
 
     case SearchPageFailure(e) =>
+      logger.warn(self.path + " ", e)
       if (!_isTimeout) {
         reqSender ! NewsResult(source, key, DateTimeUtils.now(), -1, Nil, Some(e.getLocalizedMessage))
       }

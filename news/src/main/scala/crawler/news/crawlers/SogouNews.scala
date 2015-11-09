@@ -19,14 +19,14 @@ import scala.util.Try
  * 搜狗新闻搜索
  * @param httpClient
  */
-class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SOGOU) {
+class SogouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SOGOU) {
 
   private def parseItem(elem: Element) = {
     val header = elem.select("h3.pt")
     val title = header.select("a.pp")
     val source = header.select("cite") match {
       case s if s.isEmpty => Array("", "")
-      case s => s.text().split(SogouCrawler.CITE_SPLIT_CHAR)
+      case s => s.text().split(SogouNews.CITE_SPLIT_CHAR)
     }
     val summary = elem.select("div.ft").text().replace( """>>\d+?条相同新闻""", "")
 
@@ -45,7 +45,7 @@ class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SO
    */
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] = {
     //   val doc =  fetchDocument(SogouCrawler.searchUrl(URLEncoder.encode(key, "UTF-8")))
-    fetchPage(SogouCrawler.searchUrl(URLEncoder.encode(key, "UTF-8"))).map { resp =>
+    fetchPage(SogouNews.searchUrl(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBody, "http://news.sogou.com")
       val now = DateTimeUtils.now()
       //      println(doc)
@@ -65,7 +65,7 @@ class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SO
   }
 }
 
-object SogouCrawler {
+object SogouNews {
   val REGEX = """\d+?条相同新闻""".r
   val CITE_SPLIT_CHAR = 160.toChar
 
@@ -114,7 +114,7 @@ object SogouCrawler {
     implicit val timeout = Timeout(10.hours)
 
     val httpClient = HttpClient()
-    val sogou = new SogouCrawler(httpClient)
+    val sogou = new SogouNews(httpClient)
     val f = run(sogou, "杭州今元标矩科技有限公司", SearchMethod.F)
     val result = Await.result(f, timeout.duration)
         result.news.foreach(println)

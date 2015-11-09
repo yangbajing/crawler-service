@@ -29,8 +29,8 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
     this
   }
 
-  def addFormParam(key: String, value: String) = {
-    builder.addFormParam(key, value)
+  def addFormParam(params: (String, String)*) = {
+    params.foreach { case (key, value) => builder.addFormParam(key, value) }
     this
   }
 
@@ -80,7 +80,9 @@ object HttpClient {
 
   def apply(config: Config): HttpClient = {
     // TODO 解析config to AsyncHttpClientConfig
-    apply(Nil)
+    val builder = new AsyncHttpClientConfig.Builder()
+    builder.setExecutorService()
+    apply(builder.build(), Nil)
   }
 
   def apply(defaultHeaders: Iterable[(String, String)]): HttpClient =

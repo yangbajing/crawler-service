@@ -6,7 +6,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import crawler.SystemUtils
 import crawler.news.commands.{RequestSearchNews, SearchNews}
-import crawler.news.crawlers.{BaiduCrawler, NewsCrawler}
+import crawler.news.crawlers.{BaiduNews, BaiduNews$, NewsCrawler}
 import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.NewsResult
 import crawler.news.service.NewsMaster
@@ -25,7 +25,7 @@ class NewsJobMasterTest extends ServiceSpec {
   implicit val timeout = Timeout(60.seconds)
 
   "NewsMasterTest" should {
-    NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduCrawler(SystemUtils.httpClient))
+    NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduNews(SystemUtils.httpClient))
 
     "news-master" in {
       val sources = Seq(NewsSource.BAIDU)

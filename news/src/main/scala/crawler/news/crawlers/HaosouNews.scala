@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * 360好搜新闻搜索
  * Created by yangjing on 15-11-9.
  */
-class HaosouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.HAOSOU) {
+class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.HAOSOU) {
   private def parseItem(elem: Element) = {
     val a = elem.select("a")
     val newsInfo = elem.select("p.newsinfo")
@@ -36,8 +36,8 @@ class HaosouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.H
    * @return
    */
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] = {
-    fetchPage(HaosouCrawler.searchUrl(key)).map { resp =>
-      val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), NewsUtils.uriToBaseUri(HaosouCrawler.SEARCH_SITE))
+    fetchPage(HaosouNews.searchUrl(key)).map { resp =>
+      val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), NewsUtils.uriToBaseUri(HaosouNews.SEARCH_SITE))
       val now = DateTimeUtils.now()
       val ul = doc.select("ul#news")
       if (ul.isEmpty) {
@@ -59,7 +59,7 @@ class HaosouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.H
   }
 }
 
-object HaosouCrawler {
+object HaosouNews {
   val SEARCH_SITE = "http://news.haosou.com"
 
   def searchUrl(key: String) = SEARCH_SITE + "/ns?q=%s".format(URLEncoder.encode(key, SystemUtils.DEFAULT_CHARSET.name()))

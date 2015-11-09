@@ -20,9 +20,10 @@ class NewsService(httpClient: HttpClient) {
   import crawler.SystemUtils._
   import system.dispatcher
 
-  NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduCrawler(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.SOGOU, new SogouCrawler(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.HAOSOU, new HaosouCrawler(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.SOGOU, new SogouNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.HAOSOU, new HaosouNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.COURT, new CourtNews(httpClient))
 
   val newsSupervisor = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo
