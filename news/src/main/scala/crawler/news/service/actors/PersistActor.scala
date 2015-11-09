@@ -1,7 +1,7 @@
 package crawler.news.service.actors
 
 import akka.actor.Props
-import crawler.news.model.NewsResult
+import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.news.service.NewsDBRepo
 import crawler.util.actors.MetricActor
 
@@ -14,12 +14,9 @@ class PersistActor extends MetricActor {
 
   override val metricReceive: Receive = {
     case newsResult: NewsResult =>
-      persistCassandra(newsResult)
-  }
-
-  def persistCassandra(result: NewsResult): Unit = {
-    dbRepo.saveToSearchPage(result)
-    dbRepo.saveToNewsPages(result.news)
+      dbRepo.saveToSearchPage(newsResult)
+    case newsPageItem: NewsPageItem =>
+      dbRepo.saveToNewsPage(newsPageItem)
   }
 
 }

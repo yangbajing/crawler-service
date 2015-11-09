@@ -4,7 +4,8 @@ import akka.actor.Props
 import crawler.news.commands.{ItemPageResult, StartFetchItemPage}
 import crawler.news.crawlers.NewsCrawler
 import crawler.news.enums.NewsSource
-import crawler.news.model.NewsItem
+import crawler.news.model.{NewsItem, NewsPageItem}
+import crawler.news.service.NewsMaster
 import crawler.util.actors.MetricActor
 
 import scala.util.{Failure, Success}
@@ -17,6 +18,14 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
 
   import context.dispatcher
 
+  @volatile var _pageItem: NewsPageItem = null
+
+  override def metricPostStop(): Unit = {
+    if (_pageItem ne null) {
+      context.actorSelection(context.system / NewsMaster.actorName / PersistActor.actorName) ! _pageItem
+    }
+  }
+
   override val metricReceive: Receive = {
     case StartFetchItemPage =>
       val doSender = sender()
@@ -25,24 +34,18 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
         case Some(crawler) =>
           crawler.fetchNewsItem(newsItem.url).onComplete {
             case Success(pageItem) =>
-              doSender ! ItemPageResult(newsItem.copy(content = pageItem.content))
+              _pageItem = pageItem
+              doSender ! ItemPageResult(Right(pageItem))
 
             case Failure(e) =>
-              doSender ! ItemPageResult(newsItem.copy(error = Some(e.getLocalizedMessage)))
+              doSender ! ItemPageResult(Left(e.getLocalizedMessage))
           }
 
         case None =>
-          doSender ! ItemPageResult(newsItem.copy(error = Some(s"Crawler $source not exists, ${newsItem.url} needed.")))
+          doSender ! ItemPageResult(Left(s"Crawler $source not exists, ${newsItem.url} needed."))
       }
-
-    /*
-    // TODO sleep 5s 模拟抓取新闻详情内容
-    TimeUnit.SECONDS.sleep(5)
-
-    val newsItem = newsItem.copy(content = "这是新闻详情内容")
-    doSender ! ItemPageResult(newsItem)
-    */
   }
+
 }
 
 object ItemPageWorker {

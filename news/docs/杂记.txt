@@ -33,7 +33,7 @@ use crawler_news;
 
 create type news_type (
   url Text,
-  source Text,
+  author Text,
   title Text,
   datetime Timestamp,
   summary Text
@@ -42,14 +42,16 @@ create table search_page (
   key Text,
   source Text,
   count Int,
+  datetime Timestamp,
   news List<frozen <news_type>>,
-  primary key (key, source)
+  primary key (key, source, datetime)
 );
 create table news_page (
   url Text,
-  source Text,
+  author Text,
   title Text,
   datetime Timestamp,
+  src Text,
   summary Text,
   content Text,
   primary key (url)

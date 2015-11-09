@@ -2,7 +2,7 @@ package crawler.news.service
 
 import akka.pattern.ask
 import crawler.news.commands.{RequestSearchNews, SearchNews}
-import crawler.news.crawlers.{BaiduCrawler, NewsCrawler}
+import crawler.news.crawlers.{BaiduCrawler, NewsCrawler, SogouCrawler}
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.NewsResult
 import crawler.util.http.HttpClient
@@ -17,9 +17,10 @@ import scala.concurrent.duration._
 class NewsService(httpClient: HttpClient) {
 
   import crawler.SystemUtils._
-  import system.dispatcher
 
   NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduCrawler(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.SOGOU, new SogouCrawler(httpClient))
+
   val newsSupervisor = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo
 

@@ -1,7 +1,5 @@
 package crawler.util.http
 
-import scala.collection.JavaConverters._
-
 import com.ning.http.client._
 import com.ning.http.client.cookie.Cookie
 import com.ning.http.client.multipart.Part
@@ -38,15 +36,20 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
 
   def execute(): Future[Response] = {
     val promise = Promise[Response]()
-    builder.execute(new AsyncCompletionHandler[Unit] {
-      override def onCompleted(response: Response): Unit = {
-        promise.success(response)
-      }
+    try {
+      builder.execute(new AsyncCompletionHandler[Unit] {
+        override def onCompleted(response: Response): Unit = {
+          promise.success(response)
+        }
 
-      override def onThrowable(t: Throwable): Unit = {
-        promise.failure(t)
-      }
-    })
+        override def onThrowable(t: Throwable): Unit = {
+          promise.failure(t)
+        }
+      })
+    } catch {
+      case e: Throwable =>
+        promise.failure(e)
+    }
     promise.future
   }
 

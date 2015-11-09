@@ -12,7 +12,7 @@ import crawler.util.time.DateTimeUtils
 case class NewsItem(title: String,
                     url: String,
                     // 新闻来源（站点）
-                    source: String,
+                    author: String,
                     datetime: LocalDateTime,
                     // 摘要
                     summary: String,
@@ -24,7 +24,7 @@ object NewsItem {
     userType.newValue()
       .setString("title", ni.title)
       .setString("url", ni.url)
-      .setString("source", ni.source)
+      .setString("author", ni.author)
       .setDate("datetime", DateTimeUtils.toDate(ni.datetime))
       .setString("summary", ni.summary)
   }

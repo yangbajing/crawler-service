@@ -1,7 +1,7 @@
 package crawler.news.commands
 
 import crawler.news.enums.{SearchMethod, NewsSource}
-import crawler.news.model.{NewsItem, NewsResult}
+import crawler.news.model.{NewsPageItem, NewsItem, NewsResult}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -51,6 +51,6 @@ case object StartFetchItemPage
 
 /**
  * 新闻详情
- * @param item 新闻详情
+ * @param result 新闻详情
  */
-case class ItemPageResult(item: NewsItem)
+case class ItemPageResult(result: Either[String, NewsPageItem])

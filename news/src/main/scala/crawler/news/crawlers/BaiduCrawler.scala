@@ -21,10 +21,9 @@ import scala.concurrent.{Await, ExecutionContext, Future}
  * 百度新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) extends NewsCrawler(NewsSource.BAIDU) {
+class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU) {
 
   import crawler.util.JsoupImplicits._
-
 
   override protected val defaultHeaders: Seq[(String, String)] = super.defaultHeaders :+ ("User-Agent" -> "Baiduspider")
 
@@ -43,10 +42,10 @@ class BaiduCrawler(val httpClient: HttpClient)(implicit ec: ExecutionContext) ex
       "")
   }
 
-  override def fetchNewsList(key: String): Future[NewsResult] =
+  override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] =
     fetchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
-      println(doc)
+//      println(doc)
       if (doc.getElementById("noresult") ne null) {
         NewsResult(newsSource, key, 0, Nil)
       } else {

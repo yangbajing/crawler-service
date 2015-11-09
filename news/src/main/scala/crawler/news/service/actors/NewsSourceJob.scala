@@ -70,19 +70,27 @@ class NewsSourceJob(source: NewsSource.Value,
           self ! PoisonPill
       }
 
-    case ItemPageResult(newItem) =>
+    case ItemPageResult(result) =>
       val doSender = sender()
       _notCompleteItemPageActorNames = _notCompleteItemPageActorNames.filterNot(_ == doSender.path.name)
+      result match {
+        case Left(errMsg) =>
+        // TODO 解析新闻详情页失败！
 
-      // 更新 result.news
-      val news = _newsResult.news.map(oldItem => if (oldItem.url == newItem.url) newItem else oldItem)
-      _newsResult = _newsResult.copy(news = news)
+        case Right(pageItem) =>
+          // 更新 result.news
+          val news = _newsResult.news.map {
+            case oldItem if oldItem.url == pageItem.url =>
+              oldItem.copy(content = pageItem.content)
+            case oldItem => oldItem
+          }
+          _newsResult = _newsResult.copy(news = news)
+      }
 
       if (_notCompleteItemPageActorNames.isEmpty) {
         if (!_isTimeout) {
           reqSender ! _newsResult
         }
-
         self ! PoisonPill
       }
 

@@ -1,5 +1,8 @@
 package crawler.news.crawlers
 
+import java.nio.charset.Charset
+
+import crawler.SystemUtils
 import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.util.http.HttpClient
@@ -20,11 +23,12 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
     "User-Agent" -> "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36")
 
   def fetchPage(url: String) = {
+    println("url: " + url)
     httpClient.get(url).header(defaultHeaders: _*).execute()
   }
 
   def fetchDocument(url: String) = {
-    val conn = Jsoup.connect(url)
+    val conn = Jsoup.connect(url).timeout(10).followRedirects(true)
     defaultHeaders.foreach { case (name, value) => conn.header(name, value) }
     conn.execute().parse()
   }
@@ -34,7 +38,7 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
    * @param key 搜索关键词
    * @return
    */
-  def fetchNewsList(key: String): Future[NewsResult]
+  def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult]
 
   /**
    * 抓取新闻详情页
@@ -55,8 +59,16 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
     //    }
     Future {
       val document = fetchDocument(url)
+      val charset = document.charset()
       val news = ContentExtractor.getNewsByDoc(document)
-      NewsPageItem(url, document.toString, news.getTitle, news.getTime, news.getContent)
+      val content = news.getContent
+
+      if (charset != SystemUtils.DEFAULT_CHARSET) {
+        println(charset)
+        println(content)
+      }
+
+      NewsPageItem(url, document.toString, news.getTitle, news.getTime, content)
     }.recover {
       case e: Exception =>
         NewsPageItem(url, "", "", "", "")
