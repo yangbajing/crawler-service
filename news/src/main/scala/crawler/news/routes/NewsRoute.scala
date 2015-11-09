@@ -30,13 +30,19 @@ object NewsRoute extends StrictLogging {
       get {
         parameters(
           'key.as[String],
-          'source.as[String] ? NewsSource.BAIDU.toString,
+          'source.as[String] ? "",
           'method.as[String] ? SearchMethod.F.toString,
           'duration.as[Int] ? 30) { (key, source, method, duration) =>
 
-          val sources = source.split(',').collect { case s if NewsSource.values.exists(_.toString == s) =>
-            NewsSource.withName(s)
-          }
+          val sources =
+            if (source.isEmpty) {
+              NewsSource.values.toSeq
+            } else {
+              source.split(',').toSeq.collect {
+                case s if NewsSource.values.exists(_.toString == s) =>
+                  NewsSource.withName(s)
+              }
+            }
           val dura = Duration(duration, TimeUnit.SECONDS)
 
           onComplete(newsService.fetchNews(key, sources, SearchMethod.withName(method), dura)) {

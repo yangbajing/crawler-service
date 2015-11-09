@@ -18,14 +18,6 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
 
   import context.dispatcher
 
-  @volatile var _pageItem: NewsPageItem = null
-
-  override def metricPostStop(): Unit = {
-    if (_pageItem ne null) {
-      context.actorSelection(context.system / NewsMaster.actorName / PersistActor.actorName) ! _pageItem
-    }
-  }
-
   override val metricReceive: Receive = {
     case StartFetchItemPage =>
       val doSender = sender()
@@ -34,7 +26,6 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
         case Some(crawler) =>
           crawler.fetchNewsItem(newsItem.url).onComplete {
             case Success(pageItem) =>
-              _pageItem = pageItem
               doSender ! ItemPageResult(Right(pageItem))
 
             case Failure(e) =>

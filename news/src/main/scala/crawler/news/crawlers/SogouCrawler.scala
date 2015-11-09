@@ -3,7 +3,6 @@ package crawler.news.crawlers
 import java.net.URLEncoder
 
 import akka.util.Timeout
-import com.typesafe.scalalogging.StrictLogging
 import crawler.SystemUtils
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.{NewsItem, NewsResult}
@@ -12,11 +11,15 @@ import crawler.util.time.DateTimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
-import scala.collection.JavaConverters._
 
-class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SOGOU) with StrictLogging {
+/**
+ * 搜狗新闻搜索
+ * @param httpClient
+ */
+class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SOGOU) {
 
   private def parseItem(elem: Element) = {
     val header = elem.select("h3.pt")
@@ -32,8 +35,7 @@ class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SO
       title.attr("href"),
       source(0),
       DateTimeUtils.toLocalDateTime(source.tail.mkString(" ")),
-      summary,
-      "")
+      summary)
   }
 
   /**
@@ -45,10 +47,11 @@ class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SO
     //   val doc =  fetchDocument(SogouCrawler.searchUrl(URLEncoder.encode(key, "UTF-8")))
     fetchPage(SogouCrawler.searchUrl(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBody, "http://news.sogou.com")
+      val now = DateTimeUtils.now()
       //      println(doc)
       val results = doc.select("div.results")
       if (results.isEmpty) {
-        NewsResult(newsSource, key, 0, Nil)
+        NewsResult(newsSource, key, now, 0, Nil)
       } else {
         val newsList = results.select("div.rb").asScala.map(parseItem)
         var count = Try( """\d+""".r.findAllMatchIn(doc.select("#pagebar_container").select("div.num").text()).mkString.toInt).getOrElse(0)
@@ -56,7 +59,7 @@ class SogouCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SO
           logger.warn("count < 1")
           count = newsList.size
         }
-        NewsResult(newsSource, key, count, newsList)
+        NewsResult(newsSource, key, now, count, newsList)
       }
     }
   }
@@ -91,7 +94,7 @@ object SogouCrawler {
           val news = result.news.map { news =>
             pageItems.find(_.url == news.url) match {
               case Some(pageItem) =>
-                news.copy(content = pageItem.content)
+                news.copy(content = Option(pageItem.content))
               case None =>
                 news
             }

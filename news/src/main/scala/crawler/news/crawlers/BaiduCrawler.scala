@@ -1,7 +1,7 @@
 package crawler.news.crawlers
 
 import java.net.URLEncoder
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 
 import akka.util.Timeout
 import crawler.SystemUtils
@@ -38,16 +38,16 @@ class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BA
       a.attr("href"),
       source.headOption.getOrElse(""),
       BaiduCrawler.dealTime(source.lastOption.getOrElse("")),
-      summary.text().replace(authorText, "").replace(footer, ""),
-      "")
+      summary.text().replace(authorText, "").replace(footer, ""))
   }
 
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] =
     fetchPage(BaiduCrawler.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
+      val now = DateTimeUtils.now()
 //      println(doc)
       if (doc.getElementById("noresult") ne null) {
-        NewsResult(newsSource, key, 0, Nil)
+        NewsResult(newsSource, key, now, 0, Nil)
       } else {
         val text = doc
           .getElementById("header_top_bar")
@@ -61,6 +61,7 @@ class BaiduCrawler(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BA
         NewsResult(
           newsSource,
           key,
+          now,
           count,
           newsDiv.findByClass("result").asScala.map(parseNewsItem).toList)
       }
@@ -115,7 +116,7 @@ object BaiduCrawler {
           val news = result.news.map { news =>
             urlContents.find(_._1 == news.url) match {
               case Some((_, content)) =>
-                news.copy(content = content)
+                news.copy(content = Option(content))
               case None =>
                 news
             }

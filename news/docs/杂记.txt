@@ -40,19 +40,19 @@ create type news_type (
 );
 create table search_page (
   key Text,
-  source Text,
-  count Int,
+  source Ascii,
   datetime Timestamp,
+  count Int,
   news List<frozen <news_type>>,
   primary key (key, source, datetime)
 );
 create table news_page (
   url Text,
-  author Text,
   title Text,
+  author Text,
   datetime Timestamp,
-  src Text,
   summary Text,
   content Text,
+  src Text,
   primary key (url)
 );

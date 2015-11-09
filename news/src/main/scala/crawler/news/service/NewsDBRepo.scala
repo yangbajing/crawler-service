@@ -1,81 +1,164 @@
 package crawler.news.service
 
+import java.time.LocalDateTime
+
 import com.datastax.driver.core.{PreparedStatement, Session, UDTValue}
 import crawler.SystemUtils
 import crawler.news.enums.{NewsSource, SearchMethod}
-import crawler.news.model.{NewsPageItem, NewsItem, NewsResult}
+import crawler.news.model.{NewsItem, NewsPage, NewsResult}
 import crawler.util.persist.CassandraPersists
 import crawler.util.time.DateTimeUtils
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
  * News DB Service
  * Created by yangjing on 15-11-6.
  */
 class NewsDBRepo {
-  import scala.collection.JavaConverters._
 
-  val keyspace = SystemUtils.crawlerConfig.getString("cassandra.keyspace")
+  val KEYSPACE = SystemUtils.crawlerConfig.getString("cassandra.keyspace")
   val cachePrepares = mutable.Map.empty[String, PreparedStatement]
 
-  def findNews(key: String,
-               sources: Seq[NewsSource.Value],
-               method: SearchMethod.Value) = {
-    require(sources.nonEmpty, "source参数不能为空")
-    CassandraPersists.using(keyspace) { session =>
-      val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ?")
-      sources.flatMap(source =>
-        session.execute(stmt.bind(key, source.toString)).asScala.map { row =>
+  private def findNews(key: String,
+                       source: NewsSource.Value,
+                       method: SearchMethod.Value,
+                       datetime: LocalDateTime)(
+                        implicit ec: ExecutionContextExecutor
+                        ): Future[Seq[NewsResult]] = {
+    println(s"key: $key, source: $source, method: $method, datetime: $datetime")
+    CassandraPersists.using(KEYSPACE) { implicit session =>
+      val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND datetime > ?")
+      val futureResultSet = session.executeAsync(stmt.bind(key, source.toString, DateTimeUtils.toDate(datetime)))
+      val list = CassandraPersists.execute(futureResultSet) { rs =>
+        rs.asScala.map { row =>
           val news = row.getList("news", classOf[UDTValue]).asScala.map(udt =>
             NewsItem(
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("author"),
               DateTimeUtils.toLocalDateTime(udt.getDate("datetime")),
-              udt.getString("summary"),
-              "")
+              udt.getString("summary"))
           )
 
-          NewsResult(
-            NewsSource.withName(row.getString("source")),
-            row.getString("key"),
-            row.getInt("count"),
-            news)
-        }
-      ).toList
+          val newsItemFuture = Future.sequence(news.map(news =>
+            findOneNewsPageItem(news.url).map(nop => news.copy(content = nop.map(_.content)))))
+
+          newsItemFuture.map { newsList =>
+            NewsResult(
+              NewsSource.withName(row.getString("source")),
+              row.getString("key"),
+              DateTimeUtils.toLocalDateTime(row.getDate("datetime")),
+              row.getInt("count"),
+              newsList)
+          }
+        }.toList
+      }
+
+      list.flatMap(futures => Future.sequence(futures))
     }
   }
-  def saveToNewsPage(pageItem: NewsPageItem): Unit = ???
 
-  def saveToNewsPages(news: Traversable[NewsItem]) =
-    CassandraPersists.using(keyspace) { session =>
-      val stmt = getPreparedStatement(session,
-        "INSERT INTO news_page(url, author, title, datetime, summary, content) VALUES(?, ?, ?, ?, ?, ?)")
-      news.map(item =>
-        session.executeAsync(stmt.bind(
-          item.url,
-          item.author,
-          item.title,
-          DateTimeUtils.toDate(item.datetime),
-          item.summary,
-          item.content))
-      )
+  def findNews(key: String,
+               sources: Seq[NewsSource.Value],
+               method: SearchMethod.Value,
+               datetime: LocalDateTime)(
+                implicit ec: ExecutionContextExecutor
+                ): Future[Seq[NewsResult]] = {
+    require(sources.nonEmpty, "source参数不能为空")
+
+    //    val results = sources.map(source => findNews(key, source, method, datetime))
+    //    Future.sequence(results).map(_.flatten)
+
+    val list = CassandraPersists.using(KEYSPACE) { implicit session =>
+      val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND datetime > ?")
+      sources.flatMap(source =>
+        session.execute(stmt.bind(key, source.toString, DateTimeUtils.toDate(datetime))).asScala.map { row =>
+          val news = row.getList("news", classOf[UDTValue]).asScala.map(udt =>
+            NewsItem(
+              udt.getString("title"),
+              udt.getString("url"),
+              udt.getString("author"),
+              DateTimeUtils.toLocalDateTime(udt.getDate("datetime")),
+              udt.getString("summary"))
+          )
+
+          // TODO 使用Seq[Future] -> Future[Seq]，加快读取速度
+
+          val newsItemFuture = Future.sequence(news.map(news =>
+            findOneNewsPageItem(news.url).map(nop => news.copy(content = nop.map(_.content)))))
+
+          newsItemFuture.map(list =>
+            NewsResult(
+              NewsSource.withName(row.getString("source")),
+              row.getString("key"),
+              DateTimeUtils.toLocalDateTime(row.getDate("datetime")),
+              row.getInt("count"),
+              list)
+          )
+
+        }
+      ).toList
+
     }
 
+    Future.sequence(list)
+  }
+
+  def findOneNewsPageItem(url: String)(
+    implicit session: Session, ec: ExecutionContextExecutor
+    ): Future[Option[NewsPage]] = {
+
+    val stmt = getPreparedStatement(session, "SELECT * FROM news_page WHERE url = ?")
+    CassandraPersists.execute(session.executeAsync(stmt.bind(url))) { rs =>
+      rs.one match {
+        case null =>
+          None
+        case row =>
+          Some(NewsPage(
+            row.getString("url"),
+            row.getString("title"),
+            row.getString("author"),
+            DateTimeUtils.toLocalDateTime(row.getDate("datetime")),
+            row.getString("summary"),
+            row.getString("content"),
+            row.getString("src"))
+          )
+      }
+    }
+  }
+
+  def saveToNewsPage(page: NewsPage): Unit = {
+    CassandraPersists.using(KEYSPACE) { session =>
+      val stmt = getPreparedStatement(session,
+        "INSERT INTO news_page(url, title, author, datetime, summary, content, src) VALUES(?, ?, ?, ?, ?, ?, ?)")
+      session.executeAsync(stmt.bind(
+        page.url,
+        page.title,
+        page.author,
+        DateTimeUtils.toDate(page.datetime),
+        page.summary,
+        page.content,
+        page.src))
+    }
+  }
+
   def saveToSearchPage(newsResult: NewsResult) =
-    CassandraPersists.using(keyspace) { session =>
-      val newsType = CassandraPersists.userType(keyspace, "news_type")
-      val stmt = getPreparedStatement(session, "INSERT INTO search_page(key, source, count, news) VALUES(?, ?, ?, ?)")
+    CassandraPersists.using(KEYSPACE) { session =>
+      val newsType = CassandraPersists.userType(KEYSPACE, "news_type")
+      val stmt = getPreparedStatement(session, "INSERT INTO search_page(key, source, datetime, count, news) VALUES(?, ?, ?, ?, ?)")
       session.executeAsync(stmt.bind(
         newsResult.key,
         newsResult.source.toString,
+        DateTimeUtils.toDate(newsResult.datetime),
         Integer.valueOf(newsResult.count),
         newsResult.news.map(n => NewsItem.toUDTValue(newsType, n)).asJava))
     }
 
   private def getPreparedStatement(session: Session, sql: String): PreparedStatement = {
-    println("sql: " + sql)
+    //    println("sql: " + sql)
     cachePrepares.getOrElse(sql, {
       val p = session.prepare(sql)
       cachePrepares.put(sql, p)

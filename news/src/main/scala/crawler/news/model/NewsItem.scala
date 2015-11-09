@@ -16,7 +16,7 @@ case class NewsItem(title: String,
                     datetime: LocalDateTime,
                     // 摘要
                     summary: String,
-                    content: String,
+                    content: Option[String] = None,
                     error: Option[String] = None)
 
 object NewsItem {

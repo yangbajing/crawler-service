@@ -155,7 +155,7 @@ public class ContentExtractor {
             contentElement = getContentElement();
             news.setContentElement(contentElement);
         } catch (Exception ex) {
-            LOG.info("news content extraction failed,extraction abort", ex);
+//            LOG.info("news content extraction failed,extraction abort", ex);
             throw new Exception(ex);
         }
 
@@ -166,7 +166,7 @@ public class ContentExtractor {
         try {
             news.setTime(getTime(contentElement));
         } catch (Exception ex) {
-            LOG.info("news title extraction failed", ex);
+//            LOG.info("news title extraction failed", ex);
         }
 
         try {

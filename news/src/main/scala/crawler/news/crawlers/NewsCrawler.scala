@@ -1,13 +1,17 @@
 package crawler.news.crawlers
 
+import java.net.URI
 import java.nio.charset.Charset
 
+import com.typesafe.scalalogging.LazyLogging
 import crawler.SystemUtils
+import crawler.news.NewsUtils
 import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
 import org.jsoup.Jsoup
+import org.jsoup.helper.DataUtil
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * 新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-abstract class NewsCrawler(val newsSource: NewsSource.Value) {
+abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging {
   //  val name: String
   val httpClient: HttpClient
 
@@ -27,7 +31,7 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
     httpClient.get(url).header(defaultHeaders: _*).execute()
   }
 
-  def fetchDocument(url: String) = {
+  private def fetchDocument(url: String) = {
     val conn = Jsoup.connect(url).timeout(10).followRedirects(true)
     defaultHeaders.foreach { case (name, value) => conn.header(name, value) }
     conn.execute().parse()
@@ -46,33 +50,36 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) {
    * @return
    */
   def fetchNewsItem(url: String)(implicit ec: ExecutionContext): Future[NewsPageItem] = {
-    //    fetchPage(url).map { resp =>
-    //      val src = resp.getResponseBody("UTF-8")
-    //      try {
-    //        val news = ContentExtractor.getNewsByHtml(src)
-    //        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
-    //      } catch {
-    //        case e: Exception =>
-    //          println(src)
-    //          NewsPageItem(url, src, "", "", "")
-    //      }
-    //    }
-    Future {
-      val document = fetchDocument(url)
-      val charset = document.charset()
-      val news = ContentExtractor.getNewsByDoc(document)
-      val content = news.getContent
-
-      if (charset != SystemUtils.DEFAULT_CHARSET) {
-        println(charset)
-        println(content)
+    fetchPage(url).map { resp =>
+      val in = resp.getResponseBodyAsStream
+      val doc = DataUtil.load(in, null, NewsUtils.uriToBaseUri(url))
+      val src = doc.toString
+      try {
+        val news = ContentExtractor.getNewsByDoc(doc)
+        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
+      } catch {
+        case e: Exception =>
+          logger.warn(s"$url context extractor", e)
+          NewsPageItem(url, src, "", "", "")
       }
-
-      NewsPageItem(url, document.toString, news.getTitle, news.getTime, content)
-    }.recover {
-      case e: Exception =>
-        NewsPageItem(url, "", "", "", "")
     }
+    //    Future {
+    //      val document = fetchDocument(url)
+    //      val charset = document.charset()
+    //      val news = ContentExtractor.getNewsByDoc(document)
+    //      val content = news.getContent
+    //
+    //      if (charset != SystemUtils.DEFAULT_CHARSET) {
+    //        println(charset)
+    //        println(content)
+    //      }
+    //
+    //      NewsPageItem(url, document.toString, news.getTitle, news.getTime, content)
+    //    }.recover {
+    //      case e: Exception =>
+    //        e.printStackTrace()
+    //        NewsPageItem(url, "", "", "", "")
+    //    }
   }
 
 }

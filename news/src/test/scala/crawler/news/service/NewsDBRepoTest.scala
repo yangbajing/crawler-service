@@ -1,16 +1,26 @@
 package crawler.news.service
 
+import java.util.concurrent.TimeUnit
+
 import crawler.news.enums.{SearchMethod, NewsSource}
+import crawler.testsuite.ServiceSpec
+import crawler.util.time.DateTimeUtils
 import org.scalatest.{MustMatchers, WordSpec}
 
-class NewsDBRepoTest extends WordSpec with MustMatchers {
+class NewsDBRepoTest extends ServiceSpec {
+
+  import system.dispatcher
 
   "NewsDBRepoTest" should {
     val dbRepo = new NewsDBRepo
 
     "findNews" in {
-      val results = dbRepo.findNews("杭州卷瓜网络有限公司", Seq(NewsSource.BAIDU), SearchMethod.F)
-      results must not be empty
+      val result = dbRepo.findNews("阿里巴巴", Seq(NewsSource.BAIDU), SearchMethod.F, DateTimeUtils.nowBegin())
+      val list = result.futureValue
+      println(list)
+      list must not be empty
+
+      TimeUnit.SECONDS.sleep(5)
     }
 
   }

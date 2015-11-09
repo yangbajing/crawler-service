@@ -1,7 +1,7 @@
 package crawler.util.time
 
+import java.time._
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.Date
 
 /**
@@ -15,13 +15,18 @@ object DateTimeUtils {
   val formatterDateMinus = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
   val formatterMinus = DateTimeFormatter.ofPattern("HH:mm")
 
-  def toLocalDateTime(s: String): LocalDateTime =
+  def toLocalDateTime(s: String): LocalDateTime = {
     s.length match {
-      case 5 => LocalDateTime.parse(s, formatterMinus)
-      case 16 => LocalDateTime.parse(s, formatterDateMinus)
-      case 20 => LocalDateTime.parse(s, formatterDateTime)
-      case _ => LocalDateTime.parse(s)
+      case 5 =>
+        LocalDateTime.parse(s, formatterMinus)
+      case 16 =>
+        LocalDateTime.parse(s, formatterDateMinus)
+      case 19 =>
+        LocalDateTime.parse(s, formatterDateTime)
+      case _ =>
+        LocalDateTime.parse(s)
     }
+  }
 
   def toLocalDateTime(date: Date): LocalDateTime =
     LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime), zoneOffset)
@@ -30,4 +35,14 @@ object DateTimeUtils {
     new Date(ldt.toInstant(zoneOffset).toEpochMilli)
 
   def now() = LocalDateTime.now()
+
+  /**
+   * @return 一天的开始：
+   */
+  def nowBegin(): LocalDateTime = LocalDate.now().atTime(0, 0, 0, 0)
+
+  /**
+   * @return 一天的结尾：
+   */
+  def nowEnd(): LocalDateTime = LocalTime.of(23, 59, 59, 999999999).atDate(LocalDate.now())
 }

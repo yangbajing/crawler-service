@@ -1,9 +1,12 @@
 package crawler.util.persist
 
-import com.datastax.driver.core.{Cluster, Session, UserType}
+import com.datastax.driver.core._
+import com.google.common.util.concurrent.{FutureCallback, Futures}
 import crawler.SystemUtils
 
 import scala.collection.JavaConverters._
+import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
+import scala.util.Try
 
 /**
  * CassandraPersists
@@ -24,5 +27,22 @@ object CassandraPersists {
     } finally {
       session.closeAsync()
     }
+  }
+
+  def execute[R](resultSetFuture: ResultSetFuture)(func: ResultSet => R)(implicit ec: ExecutionContextExecutor): Future[R] = {
+    val promise = Promise[R]()
+    Futures.addCallback(
+      resultSetFuture,
+      new FutureCallback[ResultSet] {
+        override def onFailure(t: Throwable): Unit = {
+          promise.failure(t)
+        }
+
+        override def onSuccess(rs: ResultSet): Unit = {
+          promise.complete(Try(func(rs)))
+        }
+      },
+      ec)
+    promise.future
   }
 }

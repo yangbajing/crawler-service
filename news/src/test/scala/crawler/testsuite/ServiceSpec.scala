@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import crawler.SystemUtils
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.duration.Duration
 
@@ -21,6 +22,7 @@ abstract class ServiceSpec
 
   implicit val system = SystemUtils.system
   implicit val materializer = SystemUtils.materializer
+  implicit val defaultPatience = PatienceConfig(Span(30, Seconds))
 
   override protected def afterAll(): Unit = {
     system.shutdown()

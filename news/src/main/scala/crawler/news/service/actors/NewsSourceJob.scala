@@ -1,11 +1,14 @@
 package crawler.news.service.actors
 
+import java.time.LocalDate
+
 import akka.actor.{ActorRef, Cancellable, PoisonPill, Props}
 import crawler.news.commands._
 import crawler.news.enums.{SearchMethod, NewsSource}
-import crawler.news.model.NewsResult
+import crawler.news.model.{NewsPage, NewsResult}
 import crawler.news.service.NewsMaster
 import crawler.util.actors.MetricActor
+import crawler.util.time.DateTimeUtils
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -23,7 +26,8 @@ class NewsSourceJob(source: NewsSource.Value,
                     duration: FiniteDuration,
                     reqSender: ActorRef) extends MetricActor {
 
-  @volatile var _newsResult = NewsResult(source, "", 0, Nil)
+  private val persistActor = context.actorSelection(context.system / NewsMaster.actorName / PersistActor.actorName)
+  @volatile var _newsResult = NewsResult(source, "", DateTimeUtils.now(), 0, Nil)
   @volatile var _isTimeout: Boolean = false
   @volatile var _notCompleteItemPageActorNames = Seq.empty[String]
   @volatile var _cancelableSchedule: Cancellable = _
@@ -41,7 +45,7 @@ class NewsSourceJob(source: NewsSource.Value,
     }
 
     if (null != _newsResult && _newsResult.count > 0) {
-      context.actorSelection(context.system / NewsMaster.actorName / PersistActor.actorName) ! _newsResult
+      persistActor ! _newsResult
     } else {
       logger.warn("未获取到相关数据: " + _newsResult.error)
     }
@@ -76,14 +80,30 @@ class NewsSourceJob(source: NewsSource.Value,
       result match {
         case Left(errMsg) =>
         // TODO 解析新闻详情页失败！
+          logger.error(errMsg)
 
         case Right(pageItem) =>
           // 更新 result.news
           val news = _newsResult.news.map {
             case oldItem if oldItem.url == pageItem.url =>
-              oldItem.copy(content = pageItem.content)
-            case oldItem => oldItem
+              // TODO refactor
+              if (pageItem.content != null && pageItem.content.length > 0) {
+                persistActor ! NewsPage(
+                  oldItem.url,
+                  oldItem.title,
+                  oldItem.author,
+                  oldItem.datetime,
+                  oldItem.summary,
+                  pageItem.content,
+                  pageItem.src)
+              }
+
+              oldItem.copy(content = Option(pageItem.content))
+
+            case oldItem =>
+              oldItem
           }
+
           _newsResult = _newsResult.copy(news = news)
       }
 
@@ -102,7 +122,7 @@ class NewsSourceJob(source: NewsSource.Value,
 
     case SearchPageFailure(e) =>
       if (!_isTimeout) {
-        reqSender ! NewsResult(source, key, -1, Nil, Some(e.getLocalizedMessage))
+        reqSender ! NewsResult(source, key, DateTimeUtils.now(), -1, Nil, Some(e.getLocalizedMessage))
       }
       self ! PoisonPill
   }

@@ -7,4 +7,5 @@ package crawler.news.enums
 object NewsSource extends Enumeration {
   val BAIDU = Value
   val SOGOU = Value
+  val HAOSOU = Value
 }
