@@ -24,6 +24,7 @@ class NewsService(httpClient: HttpClient) {
   NewsCrawler.registerCrawler(NewsSource.SOGOU, new SogouNews(httpClient))
   NewsCrawler.registerCrawler(NewsSource.HAOSOU, new HaosouNews(httpClient))
   NewsCrawler.registerCrawler(NewsSource.COURT, new CourtNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.WECHAT, new WechatNews(httpClient))
 
   val newsSupervisor = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo

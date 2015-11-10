@@ -9,5 +9,5 @@ object NewsSource extends Enumeration {
   val SOGOU = Value
   val HAOSOU = Value
   val COURT = Value
-  val WECHART = Value
+  val WECHAT = Value
 }

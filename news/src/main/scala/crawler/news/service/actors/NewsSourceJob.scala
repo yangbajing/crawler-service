@@ -1,7 +1,5 @@
 package crawler.news.service.actors
 
-import java.time.LocalDate
-
 import akka.actor.{ActorRef, Cancellable, PoisonPill, Props}
 import crawler.news.commands._
 import crawler.news.enums.{SearchMethod, NewsSource}
