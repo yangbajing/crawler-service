@@ -1,19 +1,15 @@
 package crawler.news.crawlers
 
-import java.net.URI
-import java.nio.charset.Charset
-
 import com.typesafe.scalalogging.LazyLogging
-import crawler.SystemUtils
 import crawler.news.NewsUtils
-import crawler.news.enums.{SearchMethod, NewsSource}
+import crawler.news.enums.NewsSource
 import crawler.news.model.{NewsPageItem, NewsResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
-import org.jsoup.Jsoup
 import org.jsoup.helper.DataUtil
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 /**
  * 新闻爬虫
@@ -23,18 +19,35 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging
   //  val name: String
   val httpClient: HttpClient
 
-  protected def defaultHeaders = Seq(
-    "User-Agent" -> "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36")
+  protected def defaultHeaders = Array(
+    Seq(
+      "User-Agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36",
+      "Accept" -> "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Encoding" -> "gzip, deflate, sdch",
+      "Accept-Language" -> "zh-CN,zh;q=0.8,en;q=0.6",
+      "Connection" -> "keep-alive"
+    ),
+    Seq(
+      "User-Agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7",
+      "Accept" -> "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    ),
+    Seq(
+      "User-Agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:39.0) Gecko/20100101 Firefox/39.0",
+      "Accept" -> "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Encoding" -> "gzip, deflate",
+      "Accept-Language" -> "en-US,en;q=0.5",
+      "Connection" -> "keep-alive"
+    )
+  )
+
+  def requestHeaders = defaultHeaders(Random.nextInt(defaultHeaders.length))
 
   def fetchPage(url: String) = {
+    val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
     println("url: " + url)
-    httpClient.get(url).header(defaultHeaders: _*).execute()
-  }
+    headers.foreach(println)
 
-  private def fetchDocument(url: String) = {
-    val conn = Jsoup.connect(url).timeout(10).followRedirects(true)
-    defaultHeaders.foreach { case (name, value) => conn.header(name, value) }
-    conn.execute().parse()
+    httpClient.get(url).setFollowRedirects(true).header(headers: _*).execute()
   }
 
   /**
@@ -63,23 +76,6 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging
           NewsPageItem(url, src, "", "", "")
       }
     }
-    //    Future {
-    //      val document = fetchDocument(url)
-    //      val charset = document.charset()
-    //      val news = ContentExtractor.getNewsByDoc(document)
-    //      val content = news.getContent
-    //
-    //      if (charset != SystemUtils.DEFAULT_CHARSET) {
-    //        println(charset)
-    //        println(content)
-    //      }
-    //
-    //      NewsPageItem(url, document.toString, news.getTitle, news.getTime, content)
-    //    }.recover {
-    //      case e: Exception =>
-    //        e.printStackTrace()
-    //        NewsPageItem(url, "", "", "", "")
-    //    }
   }
 
 }

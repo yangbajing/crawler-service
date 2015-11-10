@@ -9,11 +9,12 @@ import java.util.Date
  * Created by yangjing on 15-11-6.
  */
 object DateTimeUtils {
-
-  val zoneOffset = ZoneOffset.ofHours(8)
+  val ZONE_OFFSET = ZoneOffset.ofHours(8)
   val formatterDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val formatterDateMinus = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
   val formatterMinus = DateTimeFormatter.ofPattern("HH:mm")
+
+  def toLocalDateTime(instant: Instant): LocalDateTime = LocalDateTime.ofInstant(instant, ZONE_OFFSET)
 
   def toLocalDateTime(s: String): LocalDateTime = {
     s.length match {
@@ -29,10 +30,10 @@ object DateTimeUtils {
   }
 
   def toLocalDateTime(date: Date): LocalDateTime =
-    LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime), zoneOffset)
+    LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime), ZONE_OFFSET)
 
   def toDate(ldt: LocalDateTime): Date =
-    new Date(ldt.toInstant(zoneOffset).toEpochMilli)
+    new Date(ldt.toInstant(ZONE_OFFSET).toEpochMilli)
 
   def now() = LocalDateTime.now()
 

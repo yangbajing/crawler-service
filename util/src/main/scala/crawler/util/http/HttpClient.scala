@@ -34,11 +34,17 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
     this
   }
 
+  def setFollowRedirects(followRedirects: Boolean) = {
+    builder.setFollowRedirects(followRedirects)
+    this
+  }
+
   def execute(): Future[Response] = {
     val promise = Promise[Response]()
     try {
       builder.execute(new AsyncCompletionHandler[Unit] {
         override def onCompleted(response: Response): Unit = {
+          println(response.getStatusCode + ": " + response.getStatusText)
           promise.success(response)
         }
 
@@ -89,4 +95,10 @@ object HttpClient {
 
   def apply(config: AsyncHttpClientConfig, defaultHeaders: Iterable[(String, String)]): HttpClient =
     new HttpClient(config, defaultHeaders)
+
+  def apply(allowRedirect: Boolean): HttpClient = {
+    val builder = new AsyncHttpClientConfig.Builder()
+    builder.setFollowRedirect(false)
+    apply(builder.build(), Nil)
+  }
 }

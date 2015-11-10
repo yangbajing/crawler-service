@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 /**
  * 中国法院网新闻搜索
@@ -19,7 +20,10 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class CourtNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.COURT) {
   private def fetchPagePost(url: String, data: Seq[(String, String)]) = {
-    httpClient.post(url).header(defaultHeaders: _*).addFormParam(data: _*).execute()
+    val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
+    println(url)
+    headers.foreach(println)
+    httpClient.post(url).header(headers: _*).addFormParam(data: _*).execute()
   }
 
   private def parseNewsItem(elem: Element) = {

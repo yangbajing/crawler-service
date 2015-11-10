@@ -25,7 +25,8 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU
 
   import crawler.util.JsoupImplicits._
 
-  override protected val defaultHeaders: Seq[(String, String)] = super.defaultHeaders :+ ("User-Agent" -> "Baiduspider")
+  override protected val defaultHeaders: Array[Seq[(String, String)]] =
+    super.defaultHeaders.map(headers => headers :+ ("User-Agent" -> "Baiduspider"))
 
   private def parseNewsItem(news: Element): NewsItem = {
     val a = news.findByClass("c-title").first().getElementsByTag("a").first()
@@ -45,7 +46,7 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU
     fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
       val now = DateTimeUtils.now()
-//      println(doc)
+      //      println(doc)
       if (doc.getElementById("noresult") ne null) {
         NewsResult(newsSource, key, now, 0, Nil)
       } else {
