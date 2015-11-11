@@ -19,14 +19,14 @@ class CassandraPersistsTest extends WordSpec {
           "url" -> "http://hostname/news/1.html",
           "source" -> "网易新闻",
           "title" -> "标题",
-          "datetime" -> new Date(),
-          "summary" -> "新闻摘要")
+          "time" -> new Date(),
+          "abstract" -> "新闻摘要")
         val bstmt = session.prepare("INSERT INTO search_page(source, key, count, news) VALUES(?, ?, ?, ?);")
 
         val newsTypeUDT = session.getCluster.getMetadata.getKeyspace(keyspace).getUserType("news_type")
         val nit = newsTypeUDT.newValue()
         newsItem.foreach {
-          case ("datetime", value: Date) => nit.setDate("datetime", value)
+          case ("time", value: Date) => nit.setDate("time", value)
           case (key, value: String) => nit.setString(key, value)
         }
 

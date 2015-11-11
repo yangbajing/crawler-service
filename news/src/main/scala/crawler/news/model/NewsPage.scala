@@ -8,8 +8,7 @@ import java.time.LocalDateTime
  */
 case class NewsPage(url: String,
                     title: String,
-                    author: String,
-                    datetime: LocalDateTime,
-                    src: String,
-                    summary: String,
+                    source: String,
+                    time: LocalDateTime,
+                    `abstract`: String,
                     content: String)

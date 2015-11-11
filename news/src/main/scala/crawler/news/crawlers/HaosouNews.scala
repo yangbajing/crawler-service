@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * 360好搜新闻搜索
  * Created by yangjing on 15-11-9.
  */
-class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.HAOSOU) {
+class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.haosou) {
   private def parseItem(elem: Element) = {
     val a = elem.select("a")
     val newsInfo = elem.select("p.newsinfo")

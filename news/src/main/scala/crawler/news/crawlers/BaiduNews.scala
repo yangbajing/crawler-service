@@ -21,7 +21,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
  * 百度新闻爬虫
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
  */
-class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.BAIDU) {
+class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu) {
 
   import crawler.util.JsoupImplicits._
 

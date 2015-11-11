@@ -10,7 +10,7 @@ import crawler.news.enums.NewsSource
  */
 case class NewsResult(source: NewsSource.Value,
                       key: String,
-                      datetime: LocalDateTime,
+                      time: LocalDateTime,
                       count: Int,
                       news: Seq[NewsItem],
                       error: Option[String] = None)

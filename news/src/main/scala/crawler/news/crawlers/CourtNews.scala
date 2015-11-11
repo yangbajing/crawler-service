@@ -18,7 +18,7 @@ import scala.util.Random
  * 中国法院网新闻搜索
  * Created by yangjing on 15-11-9.
  */
-class CourtNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.COURT) {
+class CourtNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.court) {
   private def fetchPagePost(url: String, data: Seq[(String, String)]) = {
     val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
     println(url)

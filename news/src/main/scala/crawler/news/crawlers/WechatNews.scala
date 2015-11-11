@@ -19,7 +19,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
  * 搜狗微信搜索
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-10.
  */
-class WechatNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.WECHAT) {
+class WechatNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.wechat) {
   private def parseNewsItem(elem: Element) = {
     implicit val duration = 1.second
 

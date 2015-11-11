@@ -12,10 +12,10 @@ import crawler.util.time.DateTimeUtils
 case class NewsItem(title: String,
                     url: String,
                     // 新闻来源（站点）
-                    author: String,
-                    datetime: LocalDateTime,
+                    source: String,
+                    time: LocalDateTime,
                     // 摘要
-                    summary: String,
+                    `abstract`: String,
                     content: Option[String] = None,
                     error: Option[String] = None)
 
@@ -24,8 +24,8 @@ object NewsItem {
     userType.newValue()
       .setString("title", ni.title)
       .setString("url", ni.url)
-      .setString("author", ni.author)
-      .setDate("datetime", DateTimeUtils.toDate(ni.datetime))
-      .setString("summary", ni.summary)
+      .setString("source", ni.source)
+      .setDate("time", DateTimeUtils.toDate(ni.time))
+      .setString("abstract", ni.`abstract`)
   }
 }

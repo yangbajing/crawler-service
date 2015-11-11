@@ -28,31 +28,36 @@ actor中尽量不传 ActorRef，而通过ActorPath或其它类似机制来查找
 
 使用Cassandra存储，2张表：
 
-create keyspace if not exists crawler_news with replication = {'class': 'SimpleStrategy', 'replication_factor': 2};
-use crawler_news;
+create keyspace if not exists crawler_spider with replication = {'class': 'SimpleStrategy', 'replication_factor': 2};
+use crawler_spider;
 
 create type news_type (
   url Text,
-  author Text,
+  source Text,
   title Text,
-  datetime Timestamp,
-  summary Text
+  time Timestamp,
+  abstract Text
 );
 create table search_page (
   key Text,
   source Ascii,
-  datetime Timestamp,
+  time Timestamp,
   count Int,
   news List<frozen <news_type>>,
-  primary key (key, source, datetime)
+  primary key (key, source, time)
 );
 create table news_page (
   url Text,
   title Text,
-  author Text,
-  datetime Timestamp,
-  summary Text,
+  source Text,
+  time Timestamp,
+  abstract Text,
   content Text,
-  src Text,
   primary key (url)
+);
+create table page_html (
+  url Text,
+  created_at Timestamp,
+  src Text,
+  primary key (url, created_at)
 );

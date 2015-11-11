@@ -89,11 +89,10 @@ class NewsSourceJob(source: NewsSource.Value,
                 persistActor ! NewsPage(
                   oldItem.url,
                   oldItem.title,
-                  oldItem.author,
-                  oldItem.datetime,
-                  oldItem.summary,
-                  pageItem.content,
-                  pageItem.src)
+                  oldItem.source,
+                  oldItem.time,
+                  oldItem.`abstract`,
+                  pageItem.content)
               }
 
               oldItem.copy(content = Option(pageItem.content))

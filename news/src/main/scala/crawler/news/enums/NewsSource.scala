@@ -5,9 +5,9 @@ package crawler.news.enums
  * Created by yangjing on 15-11-4.
  */
 object NewsSource extends Enumeration {
-  val BAIDU = Value
-  val SOGOU = Value
-  val HAOSOU = Value
-  val COURT = Value
-  val WECHAT = Value
+  val baidu = Value
+  val sogou = Value
+  val haosou = Value
+  val court = Value
+  val wechat = Value
 }

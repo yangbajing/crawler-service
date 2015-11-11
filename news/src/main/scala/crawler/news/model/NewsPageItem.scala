@@ -6,7 +6,7 @@ package crawler.news.model
  * @param url 网页链接
  * @param src 网页源码
  * @param title 新闻标题
- * @param datetime 发布时间
+ * @param time 发布时间
  * @param content 新闻内容
  */
-case class NewsPageItem(url: String, src: String, title: String, datetime: String, content: String)
+case class NewsPageItem(url: String, src: String, title: String, time: String, content: String)

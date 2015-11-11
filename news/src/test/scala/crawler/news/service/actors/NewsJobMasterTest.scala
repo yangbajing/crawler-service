@@ -25,10 +25,10 @@ class NewsJobMasterTest extends ServiceSpec {
   implicit val timeout = Timeout(60.seconds)
 
   "NewsMasterTest" should {
-    NewsCrawler.registerCrawler(NewsSource.BAIDU, new BaiduNews(SystemUtils.httpClient))
+    NewsCrawler.registerCrawler(NewsSource.baidu, new BaiduNews(SystemUtils.httpClient))
 
     "news-master" in {
-      val sources = Seq(NewsSource.BAIDU)
+      val sources = Seq(NewsSource.baidu)
       val newsMaster = system.actorOf(NewsMaster.props, NewsMaster.actorName)
       val msg = RequestSearchNews(sources, SearchNews("杭州誉存科技有限公司", SearchMethod.F, 3.seconds))
       

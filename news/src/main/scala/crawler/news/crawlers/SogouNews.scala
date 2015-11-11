@@ -19,7 +19,7 @@ import scala.util.Try
  * 搜狗新闻搜索
  * @param httpClient
  */
-class SogouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.SOGOU) {
+class SogouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.sogou) {
 
   private def parseItem(elem: Element) = {
     val header = elem.select("h3.pt")
