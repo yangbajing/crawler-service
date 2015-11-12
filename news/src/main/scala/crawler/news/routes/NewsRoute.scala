@@ -5,14 +5,13 @@ import java.util.concurrent.TimeUnit
 import akka.http.scaladsl.model.StatusCodes
 import com.typesafe.scalalogging.StrictLogging
 import crawler.SystemUtils
+import crawler.news.crawlers._
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.service.NewsService
-import org.json4s.Extraction
-import org.json4s.jackson.JsonMethods
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success}
+import scala.util.{Try, Failure, Success}
 
 /**
  * 新闻路由
@@ -23,16 +22,24 @@ object NewsRoute extends StrictLogging {
   import akka.http.scaladsl.server.Directives._
   import crawler.news.JsonSupport._
 
-  val newsService = new NewsService(SystemUtils.httpClient)
+  val httpClient = SystemUtils.httpClient
+  NewsCrawler.registerCrawler(NewsSource.baidu, new BaiduNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.sogou, new SogouNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.haosou, new HaosouNews(httpClient))
+  NewsCrawler.registerCrawler(NewsSource.court, new CourtNews(httpClient))
+  //  NewsCrawler.registerCrawler(NewsSource.wechat, new WechatNews(httpClient))
+
+  val newsService = new NewsService()
 
   def apply(pathname: String) =
     path(pathname) {
       get {
         parameters(
-          'key.as[String],
+          'company.as[String],
           'source.as[String] ? "",
-          'method.as[String] ? SearchMethod.F.toString,
-          'duration.as[Int] ? 30) { (key, source, method, duration) =>
+          'method.as[String] ? "",
+          'duration.as[Int] ? 15,
+          'forcedLatest.as[String] ? "") { (company, source, method, duration, forcedLatest) =>
 
           val sources =
             if (source.isEmpty) {
@@ -45,7 +52,9 @@ object NewsRoute extends StrictLogging {
             }
           val dura = Duration(duration, TimeUnit.SECONDS)
 
-          onComplete(newsService.fetchNews(key, sources, SearchMethod.withName(method), dura)) {
+          val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
+
+          onComplete(newsService.fetchNews(company, sources, mtd, dura, forcedLatest == "y")) {
             case Success(result) =>
               complete(result)
 

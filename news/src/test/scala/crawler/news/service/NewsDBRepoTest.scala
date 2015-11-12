@@ -15,7 +15,7 @@ class NewsDBRepoTest extends ServiceSpec {
     val dbRepo = new NewsDBRepo
 
     "findNews" in {
-      val result = dbRepo.findNews("阿里巴巴", Seq(NewsSource.baidu), SearchMethod.F, DateTimeUtils.nowBegin())
+      val result = dbRepo.findNews("阿里巴巴", Seq(NewsSource.baidu), SearchMethod.F, Some(DateTimeUtils.nowBegin()))
       val list = result.futureValue
       println(list)
       list must not be empty

@@ -6,7 +6,7 @@ package crawler.news.enums
  */
 object SearchMethod extends Enumeration {
   // 取摘要
-  val S = Value
+  val A = Value
 
   // 取全文
   val F = Value

@@ -5,6 +5,8 @@ import com.typesafe.config.ConfigFactory
 import crawler.SystemUtils
 import crawler.routes.ApiRoutes
 
+import scala.util.{Success, Failure}
+
 /**
  * Main
  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
@@ -12,8 +14,18 @@ import crawler.routes.ApiRoutes
 object Main extends App {
 
   import SystemUtils._
+  import system.dispatcher
 
   val config = ConfigFactory.load()
 
-  Http().bindAndHandle(ApiRoutes("api"), config.getString("crawler.network.server"), config.getInt("crawler.network.port"))
+  val future = Http().bindAndHandle(
+    ApiRoutes("api"),
+    config.getString("crawler.network.server"),
+    config.getInt("crawler.network.port"))
+  future.onComplete {
+    case Success(binding) =>
+      println(binding)
+    case Failure(e) =>
+      println(e)
+  }
 }

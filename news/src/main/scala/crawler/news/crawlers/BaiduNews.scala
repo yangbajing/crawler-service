@@ -103,7 +103,7 @@ object BaiduNews {
           name: String,
           method: SearchMethod.Value)(implicit ec: ExecutionContext): Future[NewsResult] = {
     val newsResult = newsCrawler.fetchNewsList(name)
-    if (SearchMethod.S == method) {
+    if (SearchMethod.A == method) {
       newsResult
     } else {
       newsResult.flatMap { result =>

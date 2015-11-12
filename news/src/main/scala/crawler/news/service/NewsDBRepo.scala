@@ -29,9 +29,9 @@ class NewsDBRepo extends LazyLogging {
                        time: LocalDateTime)(
                         implicit ec: ExecutionContextExecutor
                         ): Future[Seq[NewsResult]] = {
-    
+
     logger.debug(s"key: $key, source: $source, method: $method, time: $time")
-    
+
     CassandraPersists.using(KEYSPACE) { implicit session =>
       val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND time > ?")
       val futureResultSet = session.executeAsync(stmt.bind(key, source.toString, DateTimeUtils.toDate(time)))
@@ -67,18 +67,21 @@ class NewsDBRepo extends LazyLogging {
   def findNews(key: String,
                sources: Seq[NewsSource.Value],
                method: SearchMethod.Value,
-               time: LocalDateTime)(
+               time: Option[LocalDateTime])(
                 implicit ec: ExecutionContextExecutor
                 ): Future[Seq[NewsResult]] = {
-    require(sources.nonEmpty, "source参数不能为空")
 
-    //    val results = sources.map(source => findNews(key, source, method, time))
-    //    Future.sequence(results).map(_.flatten)
+    val futureList = CassandraPersists.using(KEYSPACE) { implicit session =>
+      val pstmt =
+        if (time.isEmpty) getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ?")
+        else getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND time > ?")
 
-    val list = CassandraPersists.using(KEYSPACE) { implicit session =>
-      val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND time > ?")
-      sources.flatMap(source =>
-        session.execute(stmt.bind(key, source.toString, DateTimeUtils.toDate(time))).asScala.map { row =>
+      sources.flatMap { source =>
+        val stmt =
+          if (time.isEmpty) pstmt.bind(key, source.toString)
+          else pstmt.bind(key, source.toString, DateTimeUtils.toDate(time.get))
+
+        session.execute(stmt).asScala.map { row =>
           val news = row.getList("news", classOf[UDTValue]).asScala.map(udt =>
             NewsItem(
               udt.getString("title"),
@@ -87,8 +90,6 @@ class NewsDBRepo extends LazyLogging {
               DateTimeUtils.toLocalDateTime(udt.getDate("time")),
               udt.getString("abstract"))
           )
-
-          // TODO 使用Seq[Future] -> Future[Seq]，加快读取速度
 
           val newsItemFuture = Future.sequence(news.map(news =>
             findOneNewsPageItem(news.url).map(nop => news.copy(content = nop.map(_.content)))))
@@ -103,11 +104,11 @@ class NewsDBRepo extends LazyLogging {
           )
 
         }
-      ).toList
+      }.toList
 
     }
 
-    Future.sequence(list)
+    Future.sequence(futureList)
   }
 
   def findOneNewsPageItem(url: String)(

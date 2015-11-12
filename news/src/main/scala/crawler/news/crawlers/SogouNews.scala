@@ -79,7 +79,7 @@ object SogouNews {
           key: String,
           method: SearchMethod.Value)(implicit ec: ExecutionContext): Future[NewsResult] = {
     val newsResult = newsCrawler.fetchNewsList(key)
-    if (SearchMethod.S == method) {
+    if (SearchMethod.A == method) {
       newsResult
     } else {
       newsResult.flatMap { result =>

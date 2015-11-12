@@ -2,10 +2,8 @@ package crawler.news.service
 
 import akka.pattern.ask
 import crawler.news.commands.{RequestSearchNews, SearchNews}
-import crawler.news.crawlers._
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.NewsResult
-import crawler.util.http.HttpClient
 import crawler.util.time.DateTimeUtils
 
 import scala.concurrent.Future
@@ -15,16 +13,10 @@ import scala.concurrent.duration._
  * 新闻服务
  * Created by yangjing on 15-11-3.
  */
-class NewsService(httpClient: HttpClient) {
+class NewsService {
 
   import crawler.SystemUtils._
   import system.dispatcher
-
-  NewsCrawler.registerCrawler(NewsSource.baidu, new BaiduNews(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.sogou, new SogouNews(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.haosou, new HaosouNews(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.court, new CourtNews(httpClient))
-  NewsCrawler.registerCrawler(NewsSource.wechat, new WechatNews(httpClient))
 
   val newsSupervisor = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo
@@ -32,9 +24,10 @@ class NewsService(httpClient: HttpClient) {
   def fetchNews(_key: String,
                 sources: Seq[NewsSource.Value],
                 method: SearchMethod.Value,
-                duration: FiniteDuration): Future[Seq[NewsResult]] = {
+                duration: FiniteDuration,
+                forcedLatest: Boolean): Future[Seq[NewsResult]] = {
     val key = _key.trim
-    val future = dbRepo.findNews(key, sources, method, DateTimeUtils.nowBegin())
+    val future = dbRepo.findNews(key, sources, method, if (forcedLatest) Some(DateTimeUtils.nowBegin()) else None)
 
     future.flatMap(results =>
       if (results.isEmpty) {

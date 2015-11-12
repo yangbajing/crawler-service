@@ -2,6 +2,7 @@ package crawler.util.persist
 
 import com.datastax.driver.core._
 import com.google.common.util.concurrent.{FutureCallback, Futures}
+import com.typesafe.scalalogging.LazyLogging
 import crawler.SystemUtils
 
 import scala.collection.JavaConverters._
@@ -12,10 +13,13 @@ import scala.util.Try
  * CassandraPersists
  * Created by yangjing on 15-11-6.
  */
-object CassandraPersists {
+object CassandraPersists extends LazyLogging {
 
-  val cluster =
-    Cluster.builder().addContactPoints(SystemUtils.crawlerConfig.getStringList("cassandra.nodes").asScala: _*).build()
+  val cluster = {
+    val nodes = SystemUtils.crawlerConfig.getStringList("cassandra.nodes").asScala
+    logger.info("cassandra.nodes: " + nodes)
+    Cluster.builder().addContactPoints(nodes: _*).build()
+  }
 
   def userType(keyspace: String, userType: String): UserType =
     cluster.getMetadata.getKeyspace(keyspace).getUserType(userType)
