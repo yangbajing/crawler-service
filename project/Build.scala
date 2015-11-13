@@ -31,7 +31,6 @@ object Build extends Build {
           oldStrategy(x)
       },
       libraryDependencies ++= Seq(
-        _akkaHttpJson4s,
         _akkaHttp
       ))
 
@@ -41,7 +40,6 @@ object Build extends Build {
     .settings(
       description := "news",
       libraryDependencies ++= Seq(
-        _akkaHttpJson4s,
         _akkaHttp
       ))
 
@@ -50,7 +48,6 @@ object Build extends Build {
     .settings(
       description := "util",
       libraryDependencies ++= Seq(
-        _akkaHttpJson4s % "provided",
         _akkaHttp % "provided",
         _json4sJackson,
         _json4sExt,
