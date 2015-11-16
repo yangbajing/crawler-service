@@ -60,7 +60,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.wech
       println(doc)
       val results = doc.select("div.wx-rb")
       if (!doc.select("#seccodeImage").isEmpty) {
-        NewsResult(newsSource, key, now, -1, Nil, Some(doc.select("div.content-box").select("p.p2").text()))
+        NewsResult(newsSource, key, now, 0, Nil, Some(doc.select("div.content-box").select("p.p2").text()))
       } else if (results.isEmpty) {
         NewsResult(newsSource, key, now, 0, Nil)
       } else {

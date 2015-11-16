@@ -120,7 +120,7 @@ class NewsSourceJob(source: NewsSource.Value,
     case SearchPageFailure(e) =>
       logger.warn(self.path + " ", e)
       if (!_isTimeout) {
-        reqSender ! NewsResult(source, key, DateTimeUtils.now(), -1, Nil, Some(e.getLocalizedMessage))
+        reqSender ! NewsResult(source, key, DateTimeUtils.now(), 0, Nil, Some(e.getLocalizedMessage))
       }
       self ! PoisonPill
   }
