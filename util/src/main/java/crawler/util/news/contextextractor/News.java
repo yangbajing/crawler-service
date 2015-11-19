@@ -8,9 +8,9 @@ import org.jsoup.nodes.Element;
 public class News {
 
     protected String url = null;
-    protected String title = null;
+//    protected String title = null;
     protected String content = null;
-    protected String time = null;
+//    protected String time = null;
 
     protected Element contentElement = null;
 
@@ -22,13 +22,13 @@ public class News {
         this.url = url;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
+//    public String getTitle() {
+//        return title;
+//    }
+//
+//    public void setTitle(String title) {
+//        this.title = title;
+//    }
 
     public String getContent() {
         if (content == null) {
@@ -44,17 +44,17 @@ public class News {
         this.content = content;
     }
 
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
+//    public String getTime() {
+//        return time;
+//    }
+//
+//    public void setTime(String time) {
+//        this.time = time;
+//    }
 
     @Override
     public String toString() {
-        return "URL:\n" + url + "\nTITLE:\n" + title + "\nTIME:\n" + time + "\nCONTENT:\n" + getContent() + "\nCONTENT(SOURCE):\n" + contentElement;
+        return "URL:\n" + url + /*"\nTITLE:\n" + title + "\nTIME:\n" + time +*/ "\nCONTENT:\n" + getContent() + "\nCONTENT(SOURCE):\n" + contentElement;
     }
 
     public Element getContentElement() {

@@ -69,11 +69,11 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging
       val src = doc.toString
       try {
         val news = ContentExtractor.getNewsByDoc(doc)
-        NewsPageItem(url, src, news.getTitle, news.getTime, news.getContent)
+        NewsPageItem(url, src, /*news.getTitle, news.getTime,*/ news.getContent)
       } catch {
         case e: Exception =>
           logger.warn(s"$url context extractor", e)
-          NewsPageItem(url, src, "", "", "")
+          NewsPageItem(url, src, /*"", "",*/ "")
       }
     }
   }

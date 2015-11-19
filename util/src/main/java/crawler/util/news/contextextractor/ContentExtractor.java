@@ -163,17 +163,17 @@ public class ContentExtractor {
             news.setUrl(doc.baseUri());
         }
 
-        try {
-            news.setTime(getTime(contentElement));
-        } catch (Exception ex) {
-//            LOG.info("news title extraction failed", ex);
-        }
+//        try {
+//            news.setTime(getTime(contentElement));
+//        } catch (Exception ex) {
+////            LOG.info("news title extraction failed", ex);
+//        }
 
-        try {
-            news.setTitle(getTitle(contentElement));
-        } catch (Exception ex) {
-            LOG.info("title extraction failed", ex);
-        }
+//        try {
+//            news.setTitle(getTitle(contentElement));
+//        } catch (Exception ex) {
+//            LOG.info("title extraction failed", ex);
+//        }
         return news;
     }
 

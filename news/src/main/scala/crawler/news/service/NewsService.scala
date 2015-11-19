@@ -34,7 +34,7 @@ class NewsService {
         val msg = RequestSearchNews(sources, SearchNews(key, method, duration))
 
         // TODO 加上1秒以保存actor内可有充足时间来处理 duration
-        newsSupervisor.ask(msg)(duration + 1.seconds).mapTo[Seq[NewsResult]]
+        newsSupervisor.ask(msg)(duration - 100.milliseconds).mapTo[Seq[NewsResult]]
       } else {
         Future.successful(results)
       }
