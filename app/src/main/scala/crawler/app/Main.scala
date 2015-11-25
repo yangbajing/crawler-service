@@ -19,7 +19,7 @@ object Main extends App {
   val config = ConfigFactory.load()
 
   val future = Http().bindAndHandle(
-    ApiRoutes("api"),
+    ApiRoutes(),
     config.getString("crawler.network.server"),
     config.getInt("crawler.network.port"))
   future.onComplete {

@@ -41,7 +41,7 @@ object BuildSettings {
   val _akkaActor = "com.typesafe.akka" %% "akka-actor" % verAkka
   val _akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % verAkka
 
-  val verAkkaHttp = "1.0"
+  val verAkkaHttp = "2.0-M1"
   val _akkaHttpCore = ("com.typesafe.akka" %% "akka-http-core-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
   val _akkaHttp = ("com.typesafe.akka" %% "akka-http-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
 
