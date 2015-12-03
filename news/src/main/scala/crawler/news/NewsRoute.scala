@@ -2,16 +2,14 @@ package crawler.news
 
 import java.util.concurrent.TimeUnit
 
-import akka.http.scaladsl.model.StatusCodes
 import com.typesafe.scalalogging.StrictLogging
 import crawler.SystemUtils
 import crawler.news.crawlers._
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.service.NewsService
 
-import scala.concurrent.TimeoutException
 import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * 新闻路由
@@ -50,21 +48,11 @@ object NewsRoute extends StrictLogging {
                   NewsSource.withName(s)
               }
             }
-          val dura = Duration(duration, TimeUnit.SECONDS)
 
           val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
 
-          onComplete(newsService.fetchNews(company, sources, mtd, dura, forcedLatest == "y")) {
-            case Success(result) =>
-              complete(result)
-
-            case Failure(e) =>
-              logger.error(e.getLocalizedMessage, e)
-              val status = e match {
-                case _: TimeoutException => StatusCodes.RequestTimeout
-                case _ => StatusCodes.InternalServerError
-              }
-              complete(status, e.toString)
+          complete {
+            newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")
           }
         }
       }

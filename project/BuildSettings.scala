@@ -44,9 +44,15 @@ object BuildSettings {
   lazy val _akkaActor = "com.typesafe.akka" %% "akka-actor" % verAkka
   lazy val _akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % verAkka
 
+<<<<<<< HEAD
   val verAkkaHttp = "2.0-M2"
 //  lazy val _akkaHttpCore = ("com.typesafe.akka" %% "akka-http-core-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
   lazy val _akkaHttp = ("com.typesafe.akka" %% "akka-http-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
+=======
+  val verAkkaHttp = "2.0-M1"
+  val _akkaHttpCore = ("com.typesafe.akka" %% "akka-http-core-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
+  val _akkaHttp = ("com.typesafe.akka" %% "akka-http-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
+>>>>>>> e1b8c7499bc22f7e452fc8bce0ead1085fc9abd3
 
   lazy val _scalatest = "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
