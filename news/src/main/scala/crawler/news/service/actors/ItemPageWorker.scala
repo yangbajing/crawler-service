@@ -26,9 +26,11 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
         case Some(crawler) =>
           crawler.fetchNewsItem(newsItem.url).onComplete {
             case Success(pageItem) =>
+              logger.debug(s"${newsItem.url} context OK")
               doSender ! ItemPageResult(Right(pageItem))
 
             case Failure(e) =>
+              logger.warn(s"${newsItem.url} context extractor", e)
               doSender ! ItemPageResult(Left(e.getLocalizedMessage))
           }
 
