@@ -1,4 +1,4 @@
-package crawler.news.routes
+package crawler.news
 
 import java.util.concurrent.TimeUnit
 
@@ -11,7 +11,7 @@ import crawler.news.service.NewsService
 
 import scala.concurrent.TimeoutException
 import scala.concurrent.duration.Duration
-import scala.util.{Try, Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
  * 新闻路由
@@ -31,19 +31,19 @@ object NewsRoute extends StrictLogging {
 
   val newsService = new NewsService()
 
-  def apply(pathname: String) =
-    path(pathname) {
+  def apply() =
+    path("news") {
       get {
         parameters(
           'company.as[String],
           'source.as[String] ? "",
           'method.as[String] ? "",
-          'duration.as[Int] ? 15,
+          'duration.as[Int] ? 60,
           'forcedLatest.as[String] ? "") { (company, source, method, duration, forcedLatest) =>
 
           val sources =
             if (source.isEmpty) {
-              NewsSource.values.toSeq
+              Seq(NewsSource.baidu)
             } else {
               source.split(',').toSeq.collect {
                 case s if NewsSource.values.exists(_.toString == s) =>

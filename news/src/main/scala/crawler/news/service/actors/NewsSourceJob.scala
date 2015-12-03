@@ -6,7 +6,7 @@ import crawler.news.enums.{SearchMethod, NewsSource}
 import crawler.news.model.{NewsPage, NewsResult}
 import crawler.news.service.NewsMaster
 import crawler.util.actors.MetricActor
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -25,7 +25,7 @@ class NewsSourceJob(source: NewsSource.Value,
                     reqSender: ActorRef) extends MetricActor {
 
   private val persistActor = context.actorSelection(context.system / NewsMaster.actorName / PersistActor.actorName)
-  @volatile var _newsResult = NewsResult(source, "", DateTimeUtils.now(), 0, Nil)
+  @volatile var _newsResult = NewsResult(source, "", TimeUtils.now(), 0, Nil)
   @volatile var _isTimeout: Boolean = false
   @volatile var _notCompleteItemPageActorNames = Seq.empty[String]
   @volatile var _cancelableSchedule: Cancellable = _
@@ -120,7 +120,7 @@ class NewsSourceJob(source: NewsSource.Value,
     case SearchPageFailure(e) =>
       logger.warn(self.path + " ", e)
       if (!_isTimeout) {
-        reqSender ! NewsResult(source, key, DateTimeUtils.now(), 0, Nil, Some(e.getLocalizedMessage))
+        reqSender ! NewsResult(source, key, TimeUtils.now(), 0, Nil, Some(e.getLocalizedMessage))
       }
       self ! PoisonPill
   }

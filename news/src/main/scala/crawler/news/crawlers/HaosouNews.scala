@@ -7,7 +7,7 @@ import crawler.news.NewsUtils
 import crawler.news.enums.NewsSource
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -26,7 +26,7 @@ class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.haos
       a.text(),
       a.attr("href"),
       newsInfo.select("span.sitename").text(),
-      DateTimeUtils.toLocalDateTime(newsInfo.select("span.posttime").attr("title")),
+      TimeUtils.toLocalDateTime(newsInfo.select("span.posttime").attr("title")),
       elem.select("p.content").text())
   }
 
@@ -38,7 +38,7 @@ class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.haos
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] = {
     fetchPage(HaosouNews.searchUrl(key)).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), NewsUtils.uriToBaseUri(HaosouNews.SEARCH_SITE))
-      val now = DateTimeUtils.now()
+      val now = TimeUtils.now()
       val ul = doc.select("ul#news")
       if (ul.isEmpty) {
         NewsResult(newsSource, key, now, 0, Nil)

@@ -6,7 +6,7 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.{ContentTypes, HttpCharsets, MediaTypes}
 import akka.http.scaladsl.unmarshalling._
 import akka.stream.Materializer
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.json4s._
 import org.json4s.jackson.Serialization
 
@@ -41,10 +41,10 @@ trait TJsonSupport {
 
 class LocalDateTimeSerializer extends CustomSerializer[LocalDateTime](format =>
   ( {
-    case JString(s) => LocalDateTime.parse(s, DateTimeUtils.formatterDateTime)
+    case JString(s) => LocalDateTime.parse(s, TimeUtils.formatterDateTime)
     case JNull => null
   }, {
-    case d: LocalDateTime => JString(DateTimeUtils.formatterDateTime.format(d))
+    case d: LocalDateTime => JString(TimeUtils.formatterDateTime.format(d))
   })
 )
 

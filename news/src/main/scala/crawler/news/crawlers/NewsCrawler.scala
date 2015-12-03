@@ -44,8 +44,8 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging
 
   def fetchPage(url: String) = {
     val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
-    println("url: " + url)
-    headers.foreach(println)
+//    println("url: " + url)
+//    headers.foreach(println)
 
     httpClient.get(url).setFollowRedirects(true).header(headers: _*).execute()
   }
@@ -72,7 +72,7 @@ abstract class NewsCrawler(val newsSource: NewsSource.Value) extends LazyLogging
         NewsPageItem(url, src, /*news.getTitle, news.getTime,*/ news.getContent)
       } catch {
         case e: Exception =>
-          logger.warn(s"$url context extractor", e)
+//          logger.warn(s"$url context extractor", e)
           NewsPageItem(url, src, /*"", "",*/ "")
       }
     }

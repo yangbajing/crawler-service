@@ -6,7 +6,7 @@ import crawler.SystemUtils
 import crawler.news.enums.NewsSource
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -21,22 +21,22 @@ import scala.util.Random
 class CourtNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.court) {
   private def fetchPagePost(url: String, data: Seq[(String, String)]) = {
     val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
-    println(url)
-    headers.foreach(println)
+//    println(url)
+//    headers.foreach(println)
     httpClient.post(url).header(headers: _*).addFormParam(data: _*).execute()
   }
 
   private def parseNewsItem(elem: Element) = {
-    println(elem)
+//    println(elem)
     val a = elem.select("dt").select("a").first()
     val dds = elem.select("dd")
     val item = NewsItem(
       a.text(),
       CourtNews.SITE_URL + a.attr("href"),
       "中国法院网",
-      DateTimeUtils.toLocalDateTime(dds.last().text().split("    ").last),
+      TimeUtils.toLocalDateTime(dds.last().text().split("    ").last),
       dds.first().text())
-    println(item)
+//    println(item)
     item
   }
 
@@ -54,7 +54,7 @@ class CourtNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.court
       "article_category_id" -> "",
       "content_author" -> ""
     )).map { resp =>
-      val now = DateTimeUtils.now()
+      val now = TimeUtils.now()
       val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name), CourtNews.SITE_URL)
       val newsDl = doc.select("div.search_content").select("dl")
       if (newsDl.isEmpty) {

@@ -8,6 +8,8 @@ import com.ning.http.client.AsyncHttpClientConfig
 import com.typesafe.config.ConfigFactory
 import crawler.util.http.HttpClient
 
+import scala.concurrent.duration._
+
 /**
  * System Utils
  * Created by yangjing on 15-11-5.
@@ -31,5 +33,10 @@ object SystemUtils {
     builder.setAllowPoolingConnections(true)
     builder.setFollowRedirect(true)
     HttpClient(builder.build(), Nil)
+  }
+
+  def shutdown(): Unit = {
+    system.shutdown()
+    system.awaitTermination(5.seconds)
   }
 }

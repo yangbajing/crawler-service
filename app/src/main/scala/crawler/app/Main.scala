@@ -1,11 +1,14 @@
 package crawler.app
 
+import java.nio.file.{Files, Paths}
+
 import akka.http.scaladsl.Http
 import com.typesafe.config.ConfigFactory
 import crawler.SystemUtils
 import crawler.routes.ApiRoutes
+import crawler.util.Utils
 
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 /**
  * Main
@@ -16,16 +19,19 @@ object Main extends App {
   import SystemUtils._
   import system.dispatcher
 
+  Files.write(Paths.get("app.pid"), Utils.getPid.getBytes(Utils.CHARSET))
+
   val config = ConfigFactory.load()
 
   val future = Http().bindAndHandle(
-    ApiRoutes("api"),
+    ApiRoutes(),
     config.getString("crawler.network.server"),
     config.getInt("crawler.network.port"))
   future.onComplete {
     case Success(binding) =>
       println(binding)
     case Failure(e) =>
-      println(e)
+      e.printStackTrace()
+      SystemUtils.shutdown()
   }
 }

@@ -2,30 +2,30 @@ package crawler.news.crawlers
 
 import akka.util.Timeout
 import crawler.testsuite.ServiceSpec
+
 import crawler.util.http.HttpClient
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 /**
- * Created by yangjing on 15-11-9.
+ * Created by Yang Jing (yangbajing@gmail.com) on 2015-12-03.
  */
-class HaosouNewsTest extends ServiceSpec {
+class BaiduNewsTest extends ServiceSpec {
 
   import system.dispatcher
 
   implicit val timeout = Timeout(30.seconds)
 
-  "HaosouCrawlerTest" should {
+  "BaiduNewsTest" should {
 
     "fetchNewsList" in {
-      val haosou = new HaosouNews(HttpClient())
-      val result = Await.result(haosou.fetchNewsList("誉存科技"), timeout.duration)
+      val baidu = new BaiduNews(HttpClient())
+      val result = Await.result(baidu.fetchNewsList("阿里巴巴"), timeout.duration)
       result.news.foreach(println)
       println(result.source + " " + result.key)
+      println(result.news.size)
       result.news must not be empty
     }
 
   }
-
-  override implicit def patienceConfig: PatienceConfig = super.patienceConfig
 }

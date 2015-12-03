@@ -1,7 +1,7 @@
 package crawler.routes
 
 import akka.http.scaladsl.server.Directives._
-import crawler.news.routes.NewsRoute
+import crawler.news.NewsRoute
 
 /**
  * ApiRoute
@@ -9,9 +9,9 @@ import crawler.news.routes.NewsRoute
  */
 object ApiRoutes {
 
-  def apply(pathname: String) =
-    pathPrefix(pathname) {
-      NewsRoute("news")
+  def apply() =
+    pathPrefix("api") {
+      NewsRoute()
     }
 
 }

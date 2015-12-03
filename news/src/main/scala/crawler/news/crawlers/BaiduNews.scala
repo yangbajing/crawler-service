@@ -9,7 +9,7 @@ import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -45,9 +45,9 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] =
     fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
-      val now = DateTimeUtils.now()
+      val now = TimeUtils.now()
       //      println(doc)
-      if (doc.getElementById("noresult") ne null) {
+      if (doc.getElementById("noresult") != null) {
         NewsResult(newsSource, key, now, 0, Nil)
       } else {
         val text = doc
@@ -55,6 +55,7 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
           .getElementsByAttributeValue("class", "nums")
           .first()
           .text()
+//        logger.debug(doc.body().toString + "\n\n\n")
         val count = """\d+""".r.findAllMatchIn(text).map(_.matched).mkString.toInt
 
         val newsDiv = doc.getElementById("content_left") // check null
@@ -71,7 +72,7 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
 }
 
 object BaiduNews {
-  val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=20&ct=1"
+  val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=50&ct=1"
   val TIME_PATTERN = """\d{4}年\d{2}月\d{2}日 \d{2}:\d{2}""".r
   val FEW_HOURS_PATTERN = """(\d+)小时前""".r
 
@@ -85,7 +86,7 @@ object BaiduNews {
       LocalDateTime.now()
     } else if (TIME_PATTERN.pattern.matcher(timeStr).matches()) {
       val s = timeStr.replaceAll( """年|月""", "-").replace("日", "") + ":00"
-      LocalDateTime.parse(s, DateTimeUtils.formatterDateTime)
+      LocalDateTime.parse(s, TimeUtils.formatterDateTime)
     } else if (FEW_HOURS_PATTERN.pattern.matcher(timeStr).matches()) {
       val now = LocalDateTime.now()
       val hour = dealFewHours(timeStr).toLong
