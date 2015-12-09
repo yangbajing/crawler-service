@@ -22,7 +22,7 @@ object Build extends Build {
     .settings(basicSettings: _*)
     .settings(
       description := "app",
-      assemblyJarName in assembly := "crawler-app-news.jar",
+      assemblyJarName in assembly := "crawler-app.jar",
       mainClass in assembly := Some("crawler.app.Main"),
       assemblyMergeStrategy in assembly := {
         case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.discard

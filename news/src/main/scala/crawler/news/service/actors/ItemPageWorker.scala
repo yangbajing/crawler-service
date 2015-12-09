@@ -30,7 +30,8 @@ class ItemPageWorker(source: NewsSource.Value, newsItem: NewsItem) extends Metri
               doSender ! ItemPageResult(Right(pageItem))
 
             case Failure(e) =>
-              logger.warn(s"${newsItem.url} context extractor", e)
+              logger.warn(s"${newsItem.url} context extractor")
+              e.printStackTrace()
               doSender ! ItemPageResult(Left(e.getLocalizedMessage))
           }
 

@@ -3,7 +3,7 @@ package crawler.news.service
 import akka.pattern.ask
 import crawler.news.commands.{RequestSearchNews, SearchNews}
 import crawler.news.enums.{NewsSource, SearchMethod}
-import crawler.news.model.NewsResult
+import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.time.TimeUtils
 
 import scala.concurrent.Future
@@ -20,6 +20,18 @@ class NewsService {
 
   val newsMaster = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo
+
+  def fetchNewsApi(_key: String,
+                sources: Seq[NewsSource.Value],
+                method: SearchMethod.Value,
+                duration: FiniteDuration,
+                forcedLatest: Boolean): Future[Seq[NewsItem]] = {
+
+
+
+    fetchNews(_key, sources, method, duration, forcedLatest).
+      map(_.flatMap(_.news))
+  }
 
   def fetchNews(_key: String,
                 sources: Seq[NewsSource.Value],

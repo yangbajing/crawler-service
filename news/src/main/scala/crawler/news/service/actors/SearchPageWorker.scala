@@ -25,16 +25,20 @@ class SearchPageWorker(source: NewsSource.Value, key: String) extends MetricActo
           crawler.fetchNewsList(key).onComplete {
             case Success(result) =>
               doSender ! SearchResult(result)
+              stop()
 
             case Failure(e) =>
               doSender ! SearchPageFailure(e)
+              stop()
           }
 
         case None =>
           doSender ! SearchPageFailure(new RuntimeException(s"Crawler $source not exists"))
+          stop()
       }
   }
 
+  private def stop(): Unit = context.stop(self)
 }
 
 object SearchPageWorker {

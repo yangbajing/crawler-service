@@ -84,17 +84,6 @@ class NewsSourceJob(source: NewsSource.Value,
           // 更新 result.news
           val news = _newsResult.news.map {
             case oldItem if oldItem.url == pageItem.url =>
-              // TODO refactor
-              if (pageItem.content != null && pageItem.content.length > 0) {
-                persistActor ! NewsPage(
-                  oldItem.url,
-                  oldItem.title,
-                  oldItem.source,
-                  oldItem.time,
-                  oldItem.`abstract`,
-                  pageItem.content)
-              }
-
               oldItem.copy(content = Option(pageItem.content))
 
             case oldItem =>

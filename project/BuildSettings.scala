@@ -39,7 +39,7 @@ object BuildSettings {
     publishLocal :=()
   )
 
-  val verAkka = "2.4.1"
+  val verAkka = "2.3.14"
   val _akkaActor = "com.typesafe.akka" %% "akka-actor" % verAkka
   val _akkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % verAkka
 

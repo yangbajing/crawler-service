@@ -30,6 +30,6 @@ object Main extends App {
         println(s"binding: $binding")
       case Failure(e) =>
         e.printStackTrace()
-        Await.result(system.terminate(), 5.seconds)
+        SystemUtils.shutdown()
     }
 }
