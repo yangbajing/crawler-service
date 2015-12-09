@@ -3,7 +3,7 @@ package crawler.news.model
 import java.time.LocalDateTime
 
 import com.datastax.driver.core.{UDTValue, UserType}
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 
 /**
  * 新闻详情
@@ -25,7 +25,7 @@ object NewsItem {
       .setString("title", ni.title)
       .setString("url", ni.url)
       .setString("source", ni.source)
-      .setTimestamp("time", DateTimeUtils.toDate(ni.time))
+      .setTimestamp("time", TimeUtils.toDate(ni.time))
       .setString("abstract", ni.`abstract`)
   }
 }

@@ -1,4 +1,4 @@
-package crawler.news.routes
+package crawler.news
 
 import java.util.concurrent.TimeUnit
 
@@ -42,6 +42,10 @@ object NewsRoute extends StrictLogging {
         val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
         complete {
           newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")
+
+          complete {
+            newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")
+          }
         }
       }
     }

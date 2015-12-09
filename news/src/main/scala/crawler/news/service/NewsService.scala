@@ -4,7 +4,7 @@ import akka.pattern.ask
 import crawler.news.commands.{RequestSearchNews, SearchNews}
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.NewsResult
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -27,17 +27,18 @@ class NewsService {
                 duration: FiniteDuration,
                 forcedLatest: Boolean): Future[Seq[NewsResult]] = {
     val key = _key.trim
-    val future = dbRepo.findNews(key, sources, method, if (forcedLatest) Some(DateTimeUtils.nowBegin()) else None)
+    val future = dbRepo.findNews(key, sources, method, if (forcedLatest) Some(TimeUtils.nowBegin()) else None)
 
-    future.flatMap {
-      case Nil =>
+    future.flatMap(results =>
+      if (results.isEmpty) {
         val msg = RequestSearchNews(sources, SearchNews(key, method, duration))
-        newsMaster.ask(msg)(duration - 100.milliseconds).mapTo[Seq[NewsResult]]
-      case results =>
+        // TODO 最长10分钟
+        newsMaster.ask(msg)(10.minutes).mapTo[Seq[NewsResult]]
+      } else {
         Future.successful(results)
-    }
+      }
+    )
   }
 
 }
-
 

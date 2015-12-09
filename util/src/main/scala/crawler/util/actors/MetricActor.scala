@@ -25,7 +25,7 @@ trait MetricActor extends Actor with LazyLogging {
   final override def receive: Receive = {
     case s =>
       if (metricReceive.isDefinedAt(s)) {
-        logger.debug(s"${self.path} receive message: $s")
+        logger.trace(s"${self.path} receive message: $s")
         metricReceive(s)
       } else {
         logger.warn(s"${self.path} receive message: $s")

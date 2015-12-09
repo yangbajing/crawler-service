@@ -7,7 +7,7 @@ import crawler.SystemUtils
 import crawler.news.enums.NewsSource
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -34,7 +34,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.wech
         title.text().trim,
         url,
         footer.select("a#weixin_account").attr("title"),
-        DateTimeUtils.toLocalDateTime(Instant.ofEpochSecond(timeStr.map(_.toLong).getOrElse(Instant.now().getEpochSecond))),
+        TimeUtils.toLocalDateTime(Instant.ofEpochSecond(timeStr.map(_.toLong).getOrElse(Instant.now().getEpochSecond))),
         elem.select("p").text())
     } catch {
       case e: Exception =>
@@ -55,7 +55,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.wech
       response.getHeaders.entrySet().asScala.foreach { case entry => println(entry.getKey + ": " + entry.getValue.asScala) }
       //
 
-      val now = DateTimeUtils.now()
+      val now = TimeUtils.now()
       val doc = Jsoup.parse(response.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), "http://weixin.sogou.com")
       println(doc)
       val results = doc.select("div.wx-rb")

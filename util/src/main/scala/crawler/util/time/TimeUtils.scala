@@ -8,7 +8,7 @@ import java.util.Date
  * DateTimeUtils
  * Created by yangjing on 15-11-6.
  */
-object DateTimeUtils {
+object TimeUtils {
   val ZONE_OFFSET = ZoneOffset.ofHours(8)
   val formatterDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val formatterDateMinus = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")

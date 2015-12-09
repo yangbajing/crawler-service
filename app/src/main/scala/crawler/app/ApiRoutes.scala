@@ -1,7 +1,7 @@
 package crawler.app
 
 import akka.http.scaladsl.server.Directives._
-import crawler.news.routes.NewsRoute
+import crawler.news.NewsRoute
 
 /**
  * ApiRoute

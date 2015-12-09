@@ -8,7 +8,7 @@ import crawler.SystemUtils
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.{NewsItem, NewsPage, NewsResult}
 import crawler.util.persist.CassandraPersists
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -34,7 +34,7 @@ class NewsDBRepo extends LazyLogging {
 
     CassandraPersists.using(KEYSPACE) { implicit session =>
       val stmt = getPreparedStatement(session, "SELECT * FROM search_page WHERE key = ? AND source = ? AND time > ?")
-      val futureResultSet = session.executeAsync(stmt.bind(key, source.toString, DateTimeUtils.toDate(time)))
+      val futureResultSet = session.executeAsync(stmt.bind(key, source.toString, TimeUtils.toDate(time)))
       val list = CassandraPersists.execute(futureResultSet) { rs =>
         rs.asScala.map { row =>
           val news = row.getList("news", classOf[UDTValue]).asScala.map(udt =>
@@ -42,7 +42,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              DateTimeUtils.toLocalDateTime(udt.getTimestamp("time")),
+              TimeUtils.toLocalDateTime(udt.getTimestamp("time")),
               udt.getString("abstract"))
           )
 
@@ -53,7 +53,7 @@ class NewsDBRepo extends LazyLogging {
             NewsResult(
               NewsSource.withName(row.getString("source")),
               row.getString("key"),
-              DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
+              TimeUtils.toLocalDateTime(row.getTimestamp("time")),
               row.getInt("count"),
               newsList)
           }
@@ -79,7 +79,7 @@ class NewsDBRepo extends LazyLogging {
       sources.flatMap { source =>
         val stmt =
           if (time.isEmpty) pstmt.bind(key, source.toString)
-          else pstmt.bind(key, source.toString, DateTimeUtils.toDate(time.get))
+          else pstmt.bind(key, source.toString, TimeUtils.toDate(time.get))
 
         session.execute(stmt).asScala.map { row =>
           val news = row.getList("news", classOf[UDTValue]).asScala.map(udt =>
@@ -87,7 +87,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              DateTimeUtils.toLocalDateTime(udt.getTimestamp("time")),
+              TimeUtils.toLocalDateTime(udt.getTimestamp("time")),
               udt.getString("abstract"))
           )
 
@@ -98,7 +98,7 @@ class NewsDBRepo extends LazyLogging {
             NewsResult(
               NewsSource.withName(row.getString("source")),
               row.getString("key"),
-              DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
+              TimeUtils.toLocalDateTime(row.getTimestamp("time")),
               row.getInt("count"),
               list)
           )
@@ -125,7 +125,7 @@ class NewsDBRepo extends LazyLogging {
             row.getString("url"),
             row.getString("title"),
             row.getString("source"),
-            DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
+            TimeUtils.toLocalDateTime(row.getTimestamp("time")),
             row.getString("abstract"),
             row.getString("content"))
           )
@@ -141,23 +141,26 @@ class NewsDBRepo extends LazyLogging {
         page.url,
         page.title,
         page.source,
-        DateTimeUtils.toDate(page.time),
+        TimeUtils.toDate(page.time),
         page.`abstract`,
         page.content))
     }
   }
 
-  def saveToSearchPage(newsResult: NewsResult) =
+  def saveToSearchPage(newsResult: NewsResult) = {
+//    logger.debug(newsResult.news.mkString("\n"))
+    logger.info(s"key: ${newsResult.key} found news: ${newsResult.count}, saved: ${newsResult.news.size}")
     CassandraPersists.using(KEYSPACE) { session =>
       val newsType = CassandraPersists.userType(KEYSPACE, "news_type")
       val stmt = getPreparedStatement(session, "INSERT INTO search_page(key, source, time, count, news) VALUES(?, ?, ?, ?, ?)")
       session.executeAsync(stmt.bind(
         newsResult.key,
         newsResult.source.toString,
-        DateTimeUtils.toDate(newsResult.time),
+        TimeUtils.toDate(newsResult.time),
         Integer.valueOf(newsResult.count),
         newsResult.news.map(n => NewsItem.toUDTValue(newsType, n)).asJava))
     }
+  }
 
   private def getPreparedStatement(session: Session, sql: String): PreparedStatement = {
     //    println("sql: " + sql)

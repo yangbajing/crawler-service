@@ -44,7 +44,7 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
     try {
       builder.execute(new AsyncCompletionHandler[Unit] {
         override def onCompleted(response: Response): Unit = {
-          println(response.getStatusCode + ": " + response.getStatusText)
+//          println(response.getStatusCode + ": " + response.getStatusText)
           promise.success(response)
         }
 

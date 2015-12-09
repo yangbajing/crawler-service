@@ -7,7 +7,7 @@ import crawler.SystemUtils
 import crawler.news.enums.{NewsSource, SearchMethod}
 import crawler.news.model.{NewsItem, NewsResult}
 import crawler.util.http.HttpClient
-import crawler.util.time.DateTimeUtils
+import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -34,7 +34,7 @@ class SogouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.sogou
       title.text(),
       title.attr("href"),
       source(0),
-      DateTimeUtils.toLocalDateTime(source.tail.mkString(" ")),
+      TimeUtils.toLocalDateTime(source.tail.mkString(" ")),
       summary)
   }
 
@@ -47,7 +47,7 @@ class SogouNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.sogou
     //   val doc =  fetchDocument(SogouCrawler.searchUrl(URLEncoder.encode(key, "UTF-8")))
     fetchPage(SogouNews.searchUrl(URLEncoder.encode(key, "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBody, "http://news.sogou.com")
-      val now = DateTimeUtils.now()
+      val now = TimeUtils.now()
       //      println(doc)
       val results = doc.select("div.results")
       if (results.isEmpty) {
