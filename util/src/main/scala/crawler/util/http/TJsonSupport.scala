@@ -3,7 +3,7 @@ package crawler.util.http
 import java.time.LocalDateTime
 
 import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.model.{ContentTypes, HttpCharsets, MediaTypes}
+import akka.http.scaladsl.model.{ContentType, ContentTypes, HttpCharsets, MediaTypes}
 import akka.http.scaladsl.unmarshalling._
 import akka.stream.Materializer
 import crawler.util.time.TimeUtils
@@ -20,7 +20,6 @@ trait TJsonSupport {
   implicit val serialization = Serialization
   implicit val formats: Formats
 
-
   implicit def json4sUnmarshallerConverter[A: Manifest](serialization: Serialization, formats: Formats)(implicit mat: Materializer): FromEntityUnmarshaller[A] =
     json4sUnmarshaller(manifest, serialization, formats, mat)
 
@@ -36,7 +35,7 @@ trait TJsonSupport {
     json4sMarshaller(serialization, formats)
 
   implicit def json4sMarshaller[A <: AnyRef](implicit serialization: Serialization, formats: Formats): ToEntityMarshaller[A] =
-    Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(serialization.write[A])
+    Marshaller.StringMarshaller.wrap(ContentType(MediaTypes.`application/json`, HttpCharsets.`UTF-8`))(serialization.write[A])
 }
 
 class LocalDateTimeSerializer extends CustomSerializer[LocalDateTime](format =>
