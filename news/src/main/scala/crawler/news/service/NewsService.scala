@@ -18,7 +18,7 @@ class NewsService {
   import crawler.SystemUtils._
   import system.dispatcher
 
-  val newsSupervisor = system.actorOf(NewsMaster.props, NewsMaster.actorName)
+  val newsMaster = system.actorOf(NewsMaster.props, NewsMaster.actorName)
   val dbRepo = new NewsDBRepo
 
   def fetchNews(_key: String,
@@ -29,25 +29,13 @@ class NewsService {
     val key = _key.trim
     val future = dbRepo.findNews(key, sources, method, if (forcedLatest) Some(DateTimeUtils.nowBegin()) else None)
 
-    future.flatMap(results =>
-      if (results.isEmpty) {
+    future.flatMap {
+      case Nil =>
         val msg = RequestSearchNews(sources, SearchNews(key, method, duration))
-
-        // TODO 加上1秒以保存actor内可有充足时间来处理 duration
-        newsSupervisor.ask(msg)(duration - 100.milliseconds).mapTo[Seq[NewsResult]]
-      } else {
+        newsMaster.ask(msg)(duration - 100.milliseconds).mapTo[Seq[NewsResult]]
+      case results =>
         Future.successful(results)
-      }
-    )
-
-    //    if (results.isEmpty) {
-    //      val msg = RequestSearchNews(sources, SearchNews(key, method, duration))
-    //
-    ////       TODO 加上1秒以保存actor内可有充足时间来处理 duration
-    //      newsSupervisor.ask(msg)(duration + 1.seconds).mapTo[Seq[NewsResult]]
-    //    } else {
-    //      Future.successful(results)
-    //    }
+    }
   }
 
 }

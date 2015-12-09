@@ -51,7 +51,6 @@ object Build extends Build {
         _akkaHttp % "provided",
         _json4sJackson,
         _json4sExt,
-        //        _mongoScala,
         _cassandraDriverCore,
         _scalaLogging,
         _asyncHttpClient,

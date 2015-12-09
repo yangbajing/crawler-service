@@ -29,34 +29,19 @@ object NewsRoute extends StrictLogging {
 
   val newsService = new NewsService()
 
-  def apply(pathname: String) =
-    path(pathname) {
-      get {
-        parameters(
-          'company.as[String],
-          'source.as[String] ? "",
-          'method.as[String] ? "",
-          'duration.as[Int] ? 15,
-          'forcedLatest.as[String] ? "") { (company, source, method, duration, forcedLatest) =>
+  def apply() =
+    (path("news") & get) {
+      parameters(
+        'company.as[String],
+        'source.as[String] ? "",
+        'method.as[String] ? "",
+        'duration.as[Int] ? 15,
+        'forcedLatest.as[String] ? "") { (company, source, method, duration, forcedLatest) =>
 
-          val sources =
-            if (source.isEmpty) {
-              NewsSource.values.toSeq
-            } else {
-              source.split(',').toSeq.collect {
-                case s if NewsSource.values.exists(_.toString == s) =>
-                  NewsSource.withName(s)
-              }
-            }
-
-          val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
-
-          //          onSuccess(newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")) { result =>
-          //            complete(result)
-          //          }
-          complete {
-            newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")
-          }
+        val sources = NewsSource.withToNames(source)
+        val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
+        complete {
+          newsService.fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")
         }
       }
     }

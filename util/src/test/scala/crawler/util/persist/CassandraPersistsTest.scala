@@ -26,7 +26,7 @@ class CassandraPersistsTest extends WordSpec {
         val newsTypeUDT = session.getCluster.getMetadata.getKeyspace(keyspace).getUserType("news_type")
         val nit = newsTypeUDT.newValue()
         newsItem.foreach {
-          case ("time", value: Date) => nit.setDate("time", value)
+          case ("time", value: Date) => nit.setTimestamp("time", value)
           case (key, value: String) => nit.setString(key, value)
         }
 

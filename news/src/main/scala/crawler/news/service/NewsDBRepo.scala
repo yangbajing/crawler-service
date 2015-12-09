@@ -42,7 +42,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              DateTimeUtils.toLocalDateTime(udt.getDate("time")),
+              DateTimeUtils.toLocalDateTime(udt.getTimestamp("time")),
               udt.getString("abstract"))
           )
 
@@ -53,7 +53,7 @@ class NewsDBRepo extends LazyLogging {
             NewsResult(
               NewsSource.withName(row.getString("source")),
               row.getString("key"),
-              DateTimeUtils.toLocalDateTime(row.getDate("time")),
+              DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
               row.getInt("count"),
               newsList)
           }
@@ -69,7 +69,7 @@ class NewsDBRepo extends LazyLogging {
                method: SearchMethod.Value,
                time: Option[LocalDateTime])(
                 implicit ec: ExecutionContextExecutor
-                ): Future[Seq[NewsResult]] = {
+                ): Future[List[NewsResult]] = {
 
     val futureList = CassandraPersists.using(KEYSPACE) { implicit session =>
       val pstmt =
@@ -87,7 +87,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              DateTimeUtils.toLocalDateTime(udt.getDate("time")),
+              DateTimeUtils.toLocalDateTime(udt.getTimestamp("time")),
               udt.getString("abstract"))
           )
 
@@ -98,7 +98,7 @@ class NewsDBRepo extends LazyLogging {
             NewsResult(
               NewsSource.withName(row.getString("source")),
               row.getString("key"),
-              DateTimeUtils.toLocalDateTime(row.getDate("time")),
+              DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
               row.getInt("count"),
               list)
           )
@@ -125,7 +125,7 @@ class NewsDBRepo extends LazyLogging {
             row.getString("url"),
             row.getString("title"),
             row.getString("source"),
-            DateTimeUtils.toLocalDateTime(row.getDate("time")),
+            DateTimeUtils.toLocalDateTime(row.getTimestamp("time")),
             row.getString("abstract"),
             row.getString("content"))
           )

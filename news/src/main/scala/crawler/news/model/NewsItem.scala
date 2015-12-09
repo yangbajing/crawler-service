@@ -25,7 +25,7 @@ object NewsItem {
       .setString("title", ni.title)
       .setString("url", ni.url)
       .setString("source", ni.source)
-      .setDate("time", DateTimeUtils.toDate(ni.time))
+      .setTimestamp("time", DateTimeUtils.toDate(ni.time))
       .setString("abstract", ni.`abstract`)
   }
 }

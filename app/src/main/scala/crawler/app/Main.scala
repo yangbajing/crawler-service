@@ -3,8 +3,9 @@ package crawler.app
 import akka.http.scaladsl.Http
 import com.typesafe.config.ConfigFactory
 import crawler.SystemUtils
-import crawler.routes.ApiRoutes
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.util.{Success, Failure}
 
 /**
@@ -18,14 +19,12 @@ object Main extends App {
 
   val config = ConfigFactory.load()
 
-  val future = Http().bindAndHandle(
-    ApiRoutes(),
-    config.getString("crawler.network.server"),
-    config.getInt("crawler.network.port"))
-  future.onComplete {
-    case Success(binding) =>
-      println(binding)
-    case Failure(e) =>
-      println(e)
-  }
+  Http().bindAndHandle(ApiRoutes(), config.getString("crawler.network.server"), config.getInt("crawler.network.port"))
+    .onComplete {
+      case Success(binding) =>
+        println(s"binding: $binding")
+      case Failure(e) =>
+        e.printStackTrace()
+        Await.result(system.terminate(), 5.seconds)
+    }
 }

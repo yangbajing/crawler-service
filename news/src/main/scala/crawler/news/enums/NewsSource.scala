@@ -10,4 +10,14 @@ object NewsSource extends Enumeration {
   val haosou = Value
   val court = Value
   val wechat = Value
+
+  def withToNames(source: String): Seq[Value] =
+    if (source.isEmpty) {
+      NewsSource.values.toSeq
+    } else {
+      source.split(',').toSeq.collect {
+        case s if NewsSource.values.exists(_.toString == s) =>
+          NewsSource.withName(s)
+      }
+    }
 }
