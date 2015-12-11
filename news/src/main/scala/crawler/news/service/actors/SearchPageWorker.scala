@@ -1,7 +1,7 @@
 package crawler.news.service.actors
 
 import akka.actor.Props
-import crawler.news.commands.{SearchPageFailure, SearchResult, StartFetchSearchPage}
+import crawler.news.commands.{SearchPageFailure, SearchPageResult, StartFetchSearchPage}
 import crawler.news.crawlers.NewsCrawler
 import crawler.news.enums.NewsSource
 import crawler.util.actors.MetricActor
@@ -24,7 +24,7 @@ class SearchPageWorker(source: NewsSource.Value, key: String) extends MetricActo
         case Some(crawler) =>
           crawler.fetchNewsList(key).onComplete {
             case Success(result) =>
-              doSender ! SearchResult(result)
+              doSender ! SearchPageResult(result)
               stop()
 
             case Failure(e) =>

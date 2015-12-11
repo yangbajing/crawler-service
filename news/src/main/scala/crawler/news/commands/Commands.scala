@@ -36,7 +36,7 @@ case object SearchTimeout
  * 搜索结果
  * @param news 新闻结果
  */
-case class SearchResult(news: NewsResult)
+case class SearchPageResult(news: NewsResult)
 
 /**
  * 搜索失败

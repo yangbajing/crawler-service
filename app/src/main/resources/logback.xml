@@ -21,10 +21,10 @@
     </appender>
 
     <logger name="akka" level="INFO"/>
-    <logger name="crawler" level="DEBUG"/>
+    <logger name="crawler" level="INFO"/>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+        <!--<appender-ref ref="STDOUT"/>-->
         <appender-ref ref="FILE"/>
     </root>
 </configuration>

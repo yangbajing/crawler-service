@@ -2,6 +2,7 @@ package crawler.news.crawlers
 
 import java.net.URLEncoder
 import java.time.{LocalDate, LocalDateTime}
+import java.util.concurrent.TimeUnit
 
 import akka.util.Timeout
 import crawler.SystemUtils
@@ -15,7 +16,8 @@ import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Promise, Await, ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 /**
  * 百度新闻爬虫
@@ -42,23 +44,37 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
       summary.text().replace(authorText, "").replace(footer, ""))
   }
 
-  override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] =
-    fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
-      val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", "http://news.baidu.com")
+  override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] = {
+    val promise = Promise[Seq[NewsItem]]()
+
+    val newsResultsFuture = fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
+      val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduNews.BAIDU_NEWS_HOST)
+      //        logger.debug(doc.body().toString + "\n\n\n")
       val now = TimeUtils.now()
-      //      println(doc)
       if (doc.getElementById("noresult") != null) {
         NewsResult(newsSource, key, now, 0, Nil)
       } else {
-        val text = doc
+        val countText = doc
           .getElementById("header_top_bar")
           .getElementsByAttributeValue("class", "nums")
           .first()
           .text()
-//        logger.debug(doc.body().toString + "\n\n\n")
-        val count = """\d+""".r.findAllMatchIn(text).map(_.matched).mkString.toInt
+        val count =
+          """\d+""".r.findAllMatchIn(countText).map(_.matched).mkString.toInt
 
-        val newsDiv = doc.getElementById("content_left") // check null
+        val newsDiv = doc.getElementById("content_left")
+        val pages = doc.select("#page a").asScala
+        val newsItemFutures = pages.take(BaiduNews.PAGE_LIMIT - 1).map { page =>
+          TimeUnit.MILLISECONDS.sleep(500)
+          fetchPageLinks(BaiduNews.BAIDU_NEWS_HOST + page.attr("href"))
+        }
+        Future.sequence(newsItemFutures).map(_.flatten).onComplete {
+          case Success(list) =>
+            promise.success(list)
+          case Failure(e) =>
+            e.printStackTrace()
+            promise.success(Nil)
+        }
 
         NewsResult(
           newsSource,
@@ -69,10 +85,31 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
       }
     }
 
+    for {
+      newsResult <- newsResultsFuture
+      newsItems <- promise.future
+    } yield {
+      newsResult.copy(news = newsResult.news ++ newsItems)
+    }
+  }
+
+  def fetchPageLinks(url: String)(implicit ec: ExecutionContext): Future[Seq[NewsItem]] = {
+    fetchPage(url).map { resp =>
+      val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduNews.BAIDU_NEWS_HOST)
+      if (doc.getElementById("noresult") != null) {
+        Nil
+      } else {
+        val newsDiv = doc.getElementById("content_left")
+        newsDiv.findByClass("result").asScala.map(parseNewsItem).toList
+      }
+    }
+  }
 }
 
 object BaiduNews {
-  val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=50&ct=1"
+  val PAGE_LIMIT = 10
+  val BAIDU_NEWS_HOST = "http://news.baidu.com"
+  val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=20&ct=1"
   val TIME_PATTERN = """\d{4}年\d{2}月\d{2}日 \d{2}:\d{2}""".r
   val FEW_HOURS_PATTERN = """(\d+)小时前""".r
 

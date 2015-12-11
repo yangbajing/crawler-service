@@ -25,8 +25,8 @@ object SystemUtils {
   val httpClient = {
     crawlerConfig.getConfig("http-client")
     val builder = new AsyncHttpClientConfig.Builder()
-//    builder.setMaxConnections(40)
-//    builder.setMaxConnectionsPerHost(20)
+    builder.setMaxConnections(8192)
+    builder.setMaxConnectionsPerHost(10)
     builder.setConnectTimeout(10 * 1000)
     builder.setPooledConnectionIdleTimeout(40 * 1000)
     builder.setRequestTimeout(90 * 1000)

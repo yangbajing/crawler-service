@@ -22,19 +22,16 @@ class NewsService {
   val dbRepo = new NewsDBRepo
 
   def fetchNewsApi(_key: String,
-                sources: Seq[NewsSource.Value],
+                sources: Traversable[NewsSource.Value],
                 method: SearchMethod.Value,
                 duration: FiniteDuration,
                 forcedLatest: Boolean): Future[Seq[NewsItem]] = {
-
-
-
     fetchNews(_key, sources, method, duration, forcedLatest).
       map(_.flatMap(_.news))
   }
 
   def fetchNews(_key: String,
-                sources: Seq[NewsSource.Value],
+                sources: Traversable[NewsSource.Value],
                 method: SearchMethod.Value,
                 duration: FiniteDuration,
                 forcedLatest: Boolean): Future[Seq[NewsResult]] = {
@@ -43,7 +40,7 @@ class NewsService {
 
     future.flatMap(results =>
       if (results.isEmpty) {
-        val msg = RequestSearchNews(sources, SearchNews(key, method, duration))
+        val msg = RequestSearchNews(sources.toSeq, SearchNews(key, method, duration))
         // TODO 最长10分钟
         newsMaster.ask(msg)(10.minutes).mapTo[Seq[NewsResult]]
       } else {

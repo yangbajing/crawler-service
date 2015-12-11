@@ -65,7 +65,7 @@ class NewsDBRepo extends LazyLogging {
   }
 
   def findNews(key: String,
-               sources: Seq[NewsSource.Value],
+               sources: Traversable[NewsSource.Value],
                method: SearchMethod.Value,
                time: Option[LocalDateTime])(
                 implicit ec: ExecutionContextExecutor

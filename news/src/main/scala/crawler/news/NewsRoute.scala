@@ -48,26 +48,34 @@ object NewsRoute extends StrictLogging {
             'forcedLatest.as[String] ? "",
             'version.as[String] ? "1") { (company, source, method, duration, forcedLatest, version) =>
 
-            val future: Future[HttpResponse] = if (version == "2")
-              fromCrawlerApi(company).recoverWith {
-                case e: Exception =>
-                  logger.warn("fromCralwerApi recover with: " + e, e)
-                  fromLocal(company, source, method, duration, forcedLatest).flatMap(list =>
+            val future: Future[HttpResponse] =
+              version match {
+                case "3" =>
+                  fromLocal(company, Seq(NewsSource.baidu)/*NewsSource.withToNames(source)*/, method, duration, forcedLatest).flatMap(list =>
                     Marshal(list.flatMap(_.news)).to[HttpResponse]
                   )
+
+                case "2" =>
+                  fromCrawlerApi(company).recoverWith {
+                    case e: Exception =>
+                      logger.warn("fromCralwerApi recover with: " + e, e)
+                      fromLocal(company, Seq(NewsSource.baidu), method, duration, forcedLatest).flatMap(list =>
+                        Marshal(list.flatMap(_.news)).to[HttpResponse]
+                      )
+                  }
+
+                case _ =>
+                  fromLocal(company, Seq(NewsSource.baidu), method, duration, forcedLatest).flatMap(list =>
+                    Marshal(list).to[HttpResponse]
+                  )
               }
-            else
-              fromLocal(company, source, method, duration, forcedLatest).flatMap(list =>
-                Marshal(list).to[HttpResponse]
-              )
             complete(future)
           }
         }
       }
     }
 
-  private def fromLocal(company: String, source: String, method: String, duration: Int, forcedLatest: String) = {
-    val sources = NewsSource.withToNames(source)
+  private def fromLocal(company: String, sources: Traversable[NewsSource.Value], method: String, duration: Int, forcedLatest: String) = {
     val mtd = Try(SearchMethod.withName(method)).getOrElse(SearchMethod.F)
     newsService.
       fetchNews(company, sources, mtd, Duration(duration, TimeUnit.SECONDS), forcedLatest == "y")

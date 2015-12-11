@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
  */
 trait MetricActor extends Actor with LazyLogging {
   final override def preStart(): Unit = {
-    logger.debug(s"${self.path} preStart")
+    logger.trace(s"${self.path} preStart")
     MetricActor.incrementActorSize()
     metricPreStart()
   }
@@ -19,7 +19,7 @@ trait MetricActor extends Actor with LazyLogging {
   final override def postStop(): Unit = {
     metricPostStop()
     MetricActor.decrementActorSize()
-    logger.debug(s"${self.path} postStop")
+    logger.trace(s"${self.path} postStop")
   }
 
   final override def receive: Receive = {
@@ -33,11 +33,9 @@ trait MetricActor extends Actor with LazyLogging {
       }
   }
 
-  def metricPreStart(): Unit = {
-  }
+  def metricPreStart(): Unit = ()
 
-  def metricPostStop(): Unit = {
-  }
+  def metricPostStop(): Unit = ()
 
   val metricReceive: Receive
 

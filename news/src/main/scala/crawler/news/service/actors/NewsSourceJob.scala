@@ -54,7 +54,7 @@ class NewsSourceJob(source: NewsSource.Value,
       val searchPage = context.actorOf(SearchPageWorker.props(source, key), "page")
       searchPage ! StartFetchSearchPage
 
-    case SearchResult(newsResult) =>
+    case SearchPageResult(newsResult) =>
       _newsResult = newsResult
       method match {
         case SearchMethod.F if _newsResult.count > 0 => // 需要抓取详情内容
@@ -74,6 +74,7 @@ class NewsSourceJob(source: NewsSource.Value,
 
     case ItemPageResult(result) =>
       val doSender = sender()
+      println(doSender.path)
       _notCompleteItemPageActorNames = _notCompleteItemPageActorNames.filterNot(_ == doSender.path.name)
       result match {
         case Left(errMsg) =>
