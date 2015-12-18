@@ -47,7 +47,7 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
   override def fetchNewsList(key: String)(implicit ec: ExecutionContext): Future[NewsResult] = {
     val promise = Promise[Seq[NewsItem]]()
 
-    val newsResultsFuture = fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))).map { resp =>
+    val newsResultsFuture = fetchPage(BaiduNews.BAIDU_NEWS_BASE_URL.format(URLEncoder.encode('"' + key + '"', "UTF-8"))).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduNews.BAIDU_NEWS_HOST)
       //        logger.debug(doc.body().toString + "\n\n\n")
       val now = TimeUtils.now()
