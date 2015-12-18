@@ -7,8 +7,6 @@ import com.typesafe.config.ConfigFactory
 import crawler.SystemUtils
 import crawler.util.Utils
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 /**
