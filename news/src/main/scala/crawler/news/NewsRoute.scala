@@ -17,9 +17,9 @@ import scala.concurrent.duration.Duration
 import scala.util.Try
 
 /**
- * 新闻路由
- * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
- */
+  * 新闻路由
+  * Created by Yang Jing (yangbajing@gmail.com) on 2015-11-03.
+  */
 object NewsRoute extends StrictLogging {
 
   import SystemUtils.system.dispatcher
@@ -51,7 +51,7 @@ object NewsRoute extends StrictLogging {
             val future: Future[HttpResponse] =
               version match {
                 case "3" =>
-                  fromLocal(company, Seq(NewsSource.baidu)/*NewsSource.withToNames(source)*/, method, duration, forcedLatest).flatMap(list =>
+                  fromLocal(company, Seq(NewsSource.baidu) /*NewsSource.withToNames(source)*/ , method, duration, forcedLatest).flatMap(list =>
                     Marshal(list.flatMap(_.news)).to[HttpResponse]
                   )
 
@@ -91,9 +91,7 @@ object NewsRoute extends StrictLogging {
 
         HttpResponse(
           StatusCodes.OK,
-          entity =
-            HttpEntity(ContentType(MediaTypes.`application/json`, HttpCharsets.`UTF-8`),
-              resp.getResponseBody(Utils.CHARSET.name()))
+          entity = HttpEntity(ContentType(MediaTypes.`application/json`), resp.getResponseBody(Utils.CHARSET.name()))
         )
       }
 
