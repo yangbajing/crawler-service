@@ -41,8 +41,8 @@ class NewsService {
     future.flatMap(results =>
       if (results.isEmpty) {
         val msg = RequestSearchNews(sources.toSeq, SearchNews(key, method, duration))
-        // TODO 最长10分钟
-        newsMaster.ask(msg)(10.minutes).mapTo[Seq[NewsResult]]
+        // TODO 最长5分钟
+        newsMaster.ask(msg)(5.minutes).mapTo[Seq[NewsResult]]
       } else {
         Future.successful(results)
       }
