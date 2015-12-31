@@ -107,7 +107,7 @@ class BaiduNews(val httpClient: HttpClient) extends NewsCrawler(NewsSource.baidu
 }
 
 object BaiduNews {
-  val PAGE_LIMIT = 10
+  val PAGE_LIMIT = 5
   val BAIDU_NEWS_HOST = "http://news.baidu.com"
   val BAIDU_NEWS_BASE_URL = "http://news.baidu.com/ns?word=%s&tn=news&from=news&cl=2&rn=20&ct=1"
   val TIME_PATTERN = """\d{4}年\d{2}月\d{2}日 \d{2}:\d{2}""".r
