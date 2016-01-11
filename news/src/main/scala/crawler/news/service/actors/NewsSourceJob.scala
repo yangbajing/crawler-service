@@ -11,13 +11,13 @@ import crawler.util.time.TimeUtils
 import scala.concurrent.duration.FiniteDuration
 
 /**
- * 新闻job
- * @param source 搜索源
- * @param method 搜索方式
- * @param key 搜索关键词
- * @param duration 持续时间，到期后向未获取完新闻数据向客户端返回Timeout。children actor继续业务处理
- * @param reqSender 请求actor
- */
+  * 新闻job
+  * @param source 搜索源
+  * @param method 搜索方式
+  * @param key 搜索关键词
+  * @param duration 持续时间，到期后向未获取完新闻数据向客户端返回Timeout。children actor继续业务处理
+  * @param reqSender 请求actor
+  */
 class NewsSourceJob(source: NewsSource.Value,
                     method: SearchMethod.Value,
                     key: String,
@@ -45,7 +45,7 @@ class NewsSourceJob(source: NewsSource.Value,
     if (null != _newsResult && _newsResult.count > 0) {
       persistActor ! _newsResult
     } else {
-      logger.warn(self.path + " 未获取到相关数据: " + _newsResult.error)
+      logger.warn(s"${self.path} [$key]未获取到相关数据: ${_newsResult.error}")
     }
   }
 
@@ -78,7 +78,7 @@ class NewsSourceJob(source: NewsSource.Value,
       _notCompleteItemPageActorNames = _notCompleteItemPageActorNames.filterNot(_ == doSender.path.name)
       result match {
         case Left(errMsg) =>
-        // TODO 解析新闻详情页失败！
+          // TODO 解析新闻详情页失败！
           logger.error(errMsg)
 
         case Right(pageItem) =>
