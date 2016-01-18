@@ -35,7 +35,7 @@ class SogouNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.sogou
       title.text(),
       title.attr("href"),
       source(0),
-      TimeUtils.toLocalDateTime(source.tail.mkString(" ")),
+      Option(TimeUtils.toLocalDateTime(source.tail.mkString(" "))),
       summary)
   }
 

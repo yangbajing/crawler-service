@@ -9,6 +9,6 @@ import java.time.LocalDateTime
 case class NewsPage(url: String,
                     title: String,
                     source: String,
-                    time: LocalDateTime,
+                    time: Option[LocalDateTime],
                     `abstract`: String,
                     content: String)

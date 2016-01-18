@@ -42,7 +42,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              TimeUtils.toLocalDateTime(udt.getTimestamp("time")),
+              Option(TimeUtils.toLocalDateTime(udt.getTimestamp("time"))),
               udt.getString("abstract"))
           )
 
@@ -87,7 +87,7 @@ class NewsDBRepo extends LazyLogging {
               udt.getString("title"),
               udt.getString("url"),
               udt.getString("source"),
-              TimeUtils.toLocalDateTime(udt.getTimestamp("time")),
+              Option(TimeUtils.toLocalDateTime(udt.getTimestamp("time"))),
               udt.getString("abstract"))
           )
 
@@ -125,7 +125,7 @@ class NewsDBRepo extends LazyLogging {
             row.getString("url"),
             row.getString("title"),
             row.getString("source"),
-            TimeUtils.toLocalDateTime(row.getTimestamp("time")),
+            Option(TimeUtils.toLocalDateTime(row.getTimestamp("time"))),
             row.getString("abstract"),
             row.getString("content"))
           )
@@ -141,7 +141,7 @@ class NewsDBRepo extends LazyLogging {
         page.url,
         page.title,
         page.source,
-        TimeUtils.toDate(page.time),
+        page.time.map(TimeUtils.toDate).orNull,
         page.`abstract`,
         page.content))
     }

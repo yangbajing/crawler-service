@@ -34,7 +34,7 @@ class CourtNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.court
       a.text(),
       CourtNews.SITE_URL + a.attr("href"),
       "中国法院网",
-      TimeUtils.toLocalDateTime(dds.last().text().split("    ").last),
+      Option(TimeUtils.toLocalDateTime(dds.last().text().split("    ").last)),
       dds.first().text())
 //    println(item)
     item

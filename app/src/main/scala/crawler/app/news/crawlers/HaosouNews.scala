@@ -26,7 +26,7 @@ class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.haos
       a.text(),
       a.attr("href"),
       newsInfo.select("span.sitename").text(),
-      TimeUtils.toLocalDateTime(newsInfo.select("span.posttime").attr("title")),
+      Option(TimeUtils.toLocalDateTime(newsInfo.select("span.posttime").attr("title"))),
       elem.select("p.content").text())
   }
 

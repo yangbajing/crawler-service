@@ -34,7 +34,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.wech
         title.text().trim,
         url,
         footer.select("a#weixin_account").attr("title"),
-        TimeUtils.toLocalDateTime(Instant.ofEpochSecond(timeStr.map(_.toLong).getOrElse(Instant.now().getEpochSecond))),
+        Option(TimeUtils.toLocalDateTime(Instant.ofEpochSecond(timeStr.map(_.toLong).getOrElse(Instant.now().getEpochSecond)))),
         elem.select("p").text())
     } catch {
       case e: Exception =>

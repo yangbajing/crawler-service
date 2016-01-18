@@ -118,8 +118,8 @@ object BaiduNews {
     if (matcher.matches()) matcher.group(1) else ""
   }
 
-  def dealTime(timeStr: String): LocalDateTime = {
-    if (timeStr.length < 2) {
+  def dealTime(timeStr: String): Option[LocalDateTime] = {
+    val dt = if (timeStr.length < 2) {
       LocalDateTime.now()
     } else if (TIME_PATTERN.pattern.matcher(timeStr).matches()) {
       val s = timeStr.replaceAll( """年|月""", "-").replace("日", "")
@@ -129,8 +129,9 @@ object BaiduNews {
       val hour = dealFewHours(timeStr).toLong
       now.minusHours(hour)
     } else {
-      LocalDateTime.now()
+      null
     }
+    Option(dt)
   }
 
   ////////////////////////////////////////////////////////////////////////////
