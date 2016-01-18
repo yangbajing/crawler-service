@@ -5,7 +5,8 @@ import com.ning.http.client.cookie.Cookie
 import com.ning.http.client.multipart.Part
 import com.typesafe.config.Config
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future, Promise}
 
 class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
 
@@ -100,5 +101,25 @@ object HttpClient {
     val builder = new AsyncHttpClientConfig.Builder()
     builder.setFollowRedirect(false)
     apply(builder.build(), Nil)
+  }
+
+  def find302Location(url: String, headers: Seq[(String, String)])(implicit duration: Duration) = {
+    val client = HttpClient(false)
+    try {
+      val resp = Await.result(client.get(url).header(headers: _*).execute(), duration)
+      resp.getHeader("Location")
+    } catch {
+      case e: Exception =>
+        try {
+          val respose = Await.result(client.get(url).header(headers: _*).execute(), duration)
+          respose.getHeader("Location")
+        } catch {
+          case e: Exception =>
+            // do nothing
+            null
+        }
+    } finally {
+      client.close()
+    }
   }
 }

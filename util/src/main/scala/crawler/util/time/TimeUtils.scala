@@ -10,6 +10,7 @@ import java.util.Date
  */
 object TimeUtils {
   val ZONE_OFFSET = ZoneOffset.ofHours(8)
+  val formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   val formatterDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val formatterDateMinus = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
   val formatterMinus = DateTimeFormatter.ofPattern("HH:mm")

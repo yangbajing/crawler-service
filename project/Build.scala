@@ -12,13 +12,13 @@ object Build extends Build {
   }
 
   lazy val root = Project("crawler-service", file("."))
-    .aggregate(news)
+    .aggregate(app, util)
 
   ///////////////////////////////////////////////////////////////
   // projects
   ///////////////////////////////////////////////////////////////
   lazy val app = Project("app", file("app"))
-    .dependsOn(news, util)
+    .dependsOn(util)
     .settings(basicSettings: _*)
     .settings(
       description := "app",
@@ -30,15 +30,6 @@ object Build extends Build {
           val oldStrategy = (assemblyMergeStrategy in assembly).value
           oldStrategy(x)
       },
-      libraryDependencies ++= Seq(
-        _akkaHttp
-      ))
-
-  lazy val news = Project("news", file("news"))
-    .dependsOn(util)
-    .settings(basicSettings: _*)
-    .settings(
-      description := "news",
       libraryDependencies ++= Seq(
         _akkaHttp
       ))

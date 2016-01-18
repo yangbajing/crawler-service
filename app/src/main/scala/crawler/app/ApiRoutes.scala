@@ -1,23 +1,25 @@
 package crawler.app
 
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse}
-import akka.http.scaladsl.server.Directives._
-import crawler.news.NewsRoute
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.server.Directives
+import crawler.app.news.NewsRoute
+import crawler.app.site.SiteRoute
 
 /**
   * ApiRoute
   * Created by yangjing on 15-11-3.
   */
-object ApiRoutes {
+object ApiRoutes extends Directives {
 
   def apply() =
     pathPrefix("api") {
-      NewsRoute() ~
-        path("health_check") {
-          (get | head) {
-            complete(HttpResponse())
-          }
+      path("health_check") {
+        (get | head) {
+          complete(HttpResponse())
         }
+      } ~
+        NewsRoute() ~
+        SiteRoute()
     }
 
 }
