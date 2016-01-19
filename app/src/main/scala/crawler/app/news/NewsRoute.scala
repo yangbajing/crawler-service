@@ -23,11 +23,10 @@ import scala.util.Try
 object NewsRoute extends BaseRoute {
 
   val config = ConfigFactory.load()
-  val httpClient = SystemUtils.httpClient
-  NewsCrawler.registerCrawler(ItemSource.baidu, new BaiduNews(httpClient))
-  NewsCrawler.registerCrawler(ItemSource.sogou, new SogouNews(httpClient))
-  NewsCrawler.registerCrawler(ItemSource.haosou, new HaosouNews(httpClient))
-  NewsCrawler.registerCrawler(ItemSource.court, new CourtNews(httpClient))
+  NewsCrawler.registerCrawler(ItemSource.baidu, new BaiduNews(SystemUtils.httpClient))
+  NewsCrawler.registerCrawler(ItemSource.sogou, new SogouNews(SystemUtils.httpClient))
+  NewsCrawler.registerCrawler(ItemSource.haosou, new HaosouNews(SystemUtils.httpClient))
+  NewsCrawler.registerCrawler(ItemSource.court, new CourtNews(SystemUtils.httpClient))
   //  NewsCrawler.registerCrawler(NewsSource.wechat, new WechatNews(httpClient))
 
   val newsService = new NewsService()
@@ -78,7 +77,7 @@ object NewsRoute extends BaseRoute {
   }
 
   private def fromCrawlerApi(company: String) =
-    httpClient.get(config.getString("crawler.api-uri") + "/api/news")
+    SystemUtils.httpClient.get(config.getString("crawler.api-uri") + "/api/news")
       .queryParam("companyName" -> company)
       .execute()
       .map { resp =>

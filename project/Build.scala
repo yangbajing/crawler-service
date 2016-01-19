@@ -24,6 +24,7 @@ object Build extends Build {
       description := "app",
       assemblyJarName in assembly := "crawler-app.jar",
       mainClass in assembly := Some("crawler.app.Main"),
+      test in assembly := {},
       assemblyMergeStrategy in assembly := {
         case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.discard
         case x =>

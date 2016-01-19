@@ -5,6 +5,7 @@ import java.time.LocalDate
 import crawler.SystemUtils
 import crawler.enums.ItemSource
 import crawler.model.{NewsItem, SearchResult}
+import crawler.util.Utils
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
@@ -56,7 +57,7 @@ class CourtNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.court
       "content_author" -> ""
     )).map { resp =>
       val now = TimeUtils.now()
-      val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name), CourtNews.SITE_URL)
+      val doc = Jsoup.parse(resp.getResponseBody(Utils.CHARSET.name), CourtNews.SITE_URL)
       val newsDl = doc.select("div.search_content").select("dl")
       if (newsDl.isEmpty) {
         SearchResult(newsSource, key, now, 0, Nil)

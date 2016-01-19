@@ -103,11 +103,10 @@ object HttpClient {
     apply(builder.build(), Nil)
   }
 
-  def find302Location(url: String, headers: Seq[(String, String)])(implicit ec: ExecutionContext) = {
-    val client = HttpClient(false)
+  def find302Location(client: HttpClient, url: String, headers: Seq[(String, String)])(implicit ec: ExecutionContext) = {
     val promise = Promise[String]()
 
-    def findLocation() = client.get(url).header(headers: _*).execute().map(_.getHeader("Location"))
+    def findLocation() = client.get(url).header(headers: _*).setFollowRedirects(false).execute().map(_.getHeader("Location"))
 
     findLocation().onComplete {
       case Success(location) => promise.success(location)
@@ -118,25 +117,7 @@ object HttpClient {
         }
     }
 
-    val future = promise.future
-    future.onComplete(_ => client.close())
-    future
-
-    //    try {
-    //      val resp = Await.result(client.get(url).header(headers: _*).execute(), duration)
-    //      resp.getHeader("Location")
-    //    } catch {
-    //      case e: Exception =>
-    //        try {
-    //          val respose = Await.result(client.get(url).header(headers: _*).execute(), duration)
-    //          respose.getHeader("Location")
-    //        } catch {
-    //          case e: Exception =>
-    //            // do nothing
-    //            null
-    //        }
-    //    } finally {
-    //      client.close()
-    //    }
+    promise.future
   }
+
 }

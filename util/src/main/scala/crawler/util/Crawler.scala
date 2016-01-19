@@ -31,14 +31,10 @@ trait Crawler {
     )
   )
 
-  def requestHeaders = defaultHeaders(Random.nextInt(defaultHeaders.length))
+  def requestHeaders() = defaultHeaders(Random.nextInt(defaultHeaders.length))
 
   def fetchPage(url: String) = {
-    val headers = defaultHeaders(Random.nextInt(defaultHeaders.length))
-    //    println("url: " + url)
-    //    headers.foreach(println)
-
-    httpClient.get(url).setFollowRedirects(true).header(headers: _*).execute()
+    httpClient.get(url).setFollowRedirects(true).header(requestHeaders(): _*).execute()
   }
 
 }

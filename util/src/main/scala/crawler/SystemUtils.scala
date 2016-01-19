@@ -1,23 +1,22 @@
 package crawler
 
-import java.nio.charset.Charset
+import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.ning.http.client.AsyncHttpClientConfig
 import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.StrictLogging
 import crawler.util.http.HttpClient
 
 import scala.concurrent.duration._
 
 /**
- * System Utils
- * Created by yangjing on 15-11-5.
- */
-object SystemUtils {
+  * System Utils
+  * Created by yangjing on 15-11-5.
+  */
+object SystemUtils extends StrictLogging {
   val crawlerConfig = ConfigFactory.load().getConfig("crawler")
-
-  val DEFAULT_CHARSET = Charset.forName("UTF-8")
 
   implicit val system = ActorSystem(crawlerConfig.getString("akka-system-name"))
   implicit val materializer = ActorMaterializer()
@@ -26,7 +25,7 @@ object SystemUtils {
     crawlerConfig.getConfig("http-client")
     val builder = new AsyncHttpClientConfig.Builder()
     builder.setMaxConnections(8192)
-    builder.setMaxConnectionsPerHost(10)
+    builder.setMaxConnectionsPerHost(4)
     builder.setConnectTimeout(10 * 1000)
     builder.setPooledConnectionIdleTimeout(40 * 1000)
     builder.setRequestTimeout(90 * 1000)
@@ -36,7 +35,16 @@ object SystemUtils {
   }
 
   def shutdown(): Unit = {
+    httpClient.close()
     system.shutdown()
-    system.awaitTermination(5.seconds)
+    try {
+      system.awaitTermination(5.seconds)
+      System.exit(0)
+    } catch {
+      case e: TimeoutException =>
+        logger.error(e.getLocalizedMessage, e)
+        System.exit(3)
+    }
   }
+
 }

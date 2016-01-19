@@ -111,7 +111,7 @@ class BaiduSite(val httpClient: HttpClient) extends Crawler with LazyLogging {
 
     val link = elem.select(".t").select("a").first()
     val href = link.attr("href")
-    val url = Option(Await.result(HttpClient.find302Location(href, requestHeaders), 1.second)).getOrElse(href)
+    val url = Option(Await.result(HttpClient.find302Location(httpClient, href, requestHeaders), 1.second)).getOrElse(href)
 
     val title = link.text()
 

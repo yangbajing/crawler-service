@@ -2,10 +2,10 @@ package crawler.app.news.crawlers
 
 import java.net.URLEncoder
 
-import crawler.SystemUtils
 import crawler.app.news.NewsUtils
 import crawler.enums.ItemSource
 import crawler.model.{NewsItem, SearchResult}
+import crawler.util.Utils
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
@@ -38,7 +38,7 @@ class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.haos
    */
   override def fetchItemList(key: String)(implicit ec: ExecutionContext): Future[SearchResult] = {
     fetchPage(HaosouNews.searchUrl(key)).map { resp =>
-      val doc = Jsoup.parse(resp.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), NewsUtils.uriToBaseUri(HaosouNews.SEARCH_SITE))
+      val doc = Jsoup.parse(resp.getResponseBody(Utils.CHARSET.name()), NewsUtils.uriToBaseUri(HaosouNews.SEARCH_SITE))
       val now = TimeUtils.now()
       val ul = doc.select("ul#news")
       if (ul.isEmpty) {
@@ -63,6 +63,6 @@ class HaosouNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.haos
 object HaosouNews {
   val SEARCH_SITE = "http://news.haosou.com"
 
-  def searchUrl(key: String) = SEARCH_SITE + "/ns?q=%s".format(URLEncoder.encode(key, SystemUtils.DEFAULT_CHARSET.name()))
+  def searchUrl(key: String) = SEARCH_SITE + "/ns?q=%s".format(URLEncoder.encode(key, Utils.CHARSET.name()))
 
 }

@@ -3,9 +3,9 @@ package crawler.app.news.crawlers
 import java.net.URLEncoder
 import java.time.Instant
 
-import crawler.SystemUtils
 import crawler.enums.ItemSource
 import crawler.model.{NewsItem, SearchResult}
+import crawler.util.Utils
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup
@@ -29,7 +29,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.wech
       val scriptStr = elem.select("script").last().text()
       val timeStr = """'(\d+?)'""".r.findFirstMatchIn(scriptStr).map(_.matched.replace("'", ""))
       val href = WechatNews.complateWeixinUrl(title.select("a").attr("href").trim)
-      val url = Option(WechatNews.find302Location(href, requestHeaders)).getOrElse(href)
+      val url = Option(WechatNews.find302Location(href, requestHeaders())).getOrElse(href)
       NewsItem(
         title.text().trim,
         url,
@@ -57,7 +57,7 @@ class WechatNews(val httpClient: HttpClient) extends NewsCrawler(ItemSource.wech
       //
 
       val now = TimeUtils.now()
-      val doc = Jsoup.parse(response.getResponseBody(SystemUtils.DEFAULT_CHARSET.name()), "http://weixin.sogou.com")
+      val doc = Jsoup.parse(response.getResponseBody(Utils.CHARSET.name()), "http://weixin.sogou.com")
       println(doc)
       val results = doc.select("div.wx-rb")
       if (!doc.select("#seccodeImage").isEmpty) {
@@ -89,7 +89,7 @@ object WechatNews {
     if (uri.startsWith("/")) WEIXIN_SEARCH_PAGE + uri else uri
 
   def searchUrl(key: String) =
-    WEIXIN_SEARCH_PAGE + "/weixin?query=%s&type=2".format(URLEncoder.encode(key, SystemUtils.DEFAULT_CHARSET.name()))
+    WEIXIN_SEARCH_PAGE + "/weixin?query=%s&type=2".format(URLEncoder.encode(key, Utils.CHARSET.name()))
 
   def find302Location(url: String, headers: Seq[(String, String)])(implicit duration: Duration) = {
     val client = HttpClient(false)
