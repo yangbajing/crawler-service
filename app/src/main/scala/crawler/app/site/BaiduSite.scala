@@ -15,7 +15,7 @@ import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
 /**
@@ -107,9 +107,11 @@ class BaiduSite(val httpClient: HttpClient) extends Crawler with LazyLogging {
   }
 
   def parseNewsItem(elem: Element): NewsItem = {
+    implicit val ec = ExecutionContext.Implicits.global
+
     val link = elem.select(".t").select("a").first()
     val href = link.attr("href")
-    val url = Option(HttpClient.find302Location(href, requestHeaders)(1.second)).getOrElse(href)
+    val url = Option(Await.result(HttpClient.find302Location(href, requestHeaders), 1.second)).getOrElse(href)
 
     val title = link.text()
 

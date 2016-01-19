@@ -5,8 +5,8 @@ import com.ning.http.client.cookie.Cookie
 import com.ning.http.client.multipart.Part
 import com.typesafe.config.Config
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
 class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
 
@@ -45,7 +45,7 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
     try {
       builder.execute(new AsyncCompletionHandler[Unit] {
         override def onCompleted(response: Response): Unit = {
-//          println(response.getStatusCode + ": " + response.getStatusText)
+          //          println(response.getStatusCode + ": " + response.getStatusText)
           promise.success(response)
         }
 
@@ -63,9 +63,9 @@ class HttpClientBuilder(builder: AsyncHttpClient#BoundRequestBuilder) {
 }
 
 /**
- * HttpClient
- * Created by yangjing on 15-11-3.
- */
+  * HttpClient
+  * Created by yangjing on 15-11-3.
+  */
 class HttpClient private(config: AsyncHttpClientConfig,
                          defaultHeaders: Iterable[(String, String)]) {
 
@@ -103,23 +103,40 @@ object HttpClient {
     apply(builder.build(), Nil)
   }
 
-  def find302Location(url: String, headers: Seq[(String, String)])(implicit duration: Duration) = {
+  def find302Location(url: String, headers: Seq[(String, String)])(implicit ec: ExecutionContext) = {
     val client = HttpClient(false)
-    try {
-      val resp = Await.result(client.get(url).header(headers: _*).execute(), duration)
-      resp.getHeader("Location")
-    } catch {
-      case e: Exception =>
-        try {
-          val respose = Await.result(client.get(url).header(headers: _*).execute(), duration)
-          respose.getHeader("Location")
-        } catch {
-          case e: Exception =>
-            // do nothing
-            null
+    val promise = Promise[String]()
+
+    def findLocation() = client.get(url).header(headers: _*).execute().map(_.getHeader("Location"))
+
+    findLocation().onComplete {
+      case Success(location) => promise.success(location)
+      case Failure(e) =>
+        findLocation().onComplete {
+          case Success(location) => promise.success(location)
+          case Failure(t) => promise.failure(t)
         }
-    } finally {
-      client.close()
     }
+
+    val future = promise.future
+    future.onComplete(_ => client.close())
+    future
+
+    //    try {
+    //      val resp = Await.result(client.get(url).header(headers: _*).execute(), duration)
+    //      resp.getHeader("Location")
+    //    } catch {
+    //      case e: Exception =>
+    //        try {
+    //          val respose = Await.result(client.get(url).header(headers: _*).execute(), duration)
+    //          respose.getHeader("Location")
+    //        } catch {
+    //          case e: Exception =>
+    //            // do nothing
+    //            null
+    //        }
+    //    } finally {
+    //      client.close()
+    //    }
   }
 }
