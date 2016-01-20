@@ -40,13 +40,13 @@ object Build extends Build {
     .settings(
       description := "util",
       libraryDependencies ++= Seq(
-        _akkaHttp % "provided",
         _json4sJackson,
         _json4sExt,
         _cassandraDriverCore,
         _scalaLogging,
         _asyncHttpClient,
         _jsoup,
+        _akkaHttp % "provided",
         _akkaActor,
         _akkaSlf4j,
         _logbackClassic

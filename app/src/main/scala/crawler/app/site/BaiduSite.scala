@@ -37,7 +37,7 @@ class BaiduSite(val httpClient: HttpClient,
     val promise = Promise[Seq[NewsItem]]()
 
     val url = BaiduSite.BAIDU_SITE_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))
-    println("url: " + url)
+    logger.debug("url: " + url)
 
     val newsResultsFuture = fetchPage(url).map { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduSite.BAIDU_SITE_HOST).getElementById("wrapper_wrapper")
@@ -50,6 +50,7 @@ class BaiduSite(val httpClient: HttpClient,
       logger.debug("contentNone: " + contentNone)
 
       if (!contentNone.isEmpty) {
+        promise.success(Nil)
         SearchResult(ItemSource.baiduSite, key, now, 0, Nil)
       } else {
         val wrapper = doc
@@ -85,7 +86,6 @@ class BaiduSite(val httpClient: HttpClient,
       }
     }
 
-    //    newsResultsFuture
     for {
       newsResult <- newsResultsFuture
       newsItems <- promise.future

@@ -26,8 +26,8 @@ class BaiduSiteTest extends ServiceSpec {
       val baidu = new BaiduSite(HttpClient(), true)
       val request = SearchRequest(
         //        SearchParam("江苏华米数码科技有限公司", Some(SearchSyntax.Intitle)) ::
-        SearchParam("阿里巴巴", Some(SearchSyntax.Intitle)) ::
-          SearchParam("偷税", syntax = Some(SearchSyntax.Intitle)) ::
+        SearchParam("阿里巴巴kakakakaak", Some(SearchSyntax.Intitle)) ::
+          SearchParam("失信", syntax = Some(SearchSyntax.Intitle), strict = false) ::
           Nil
       )
 
