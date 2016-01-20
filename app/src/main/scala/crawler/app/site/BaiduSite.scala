@@ -21,7 +21,8 @@ import scala.util.{Failure, Success}
 /**
   * Created by Yang Jing (yangbajing@gmail.com) on 2016-01-18.
   */
-class BaiduSite(val httpClient: HttpClient) extends Crawler with LazyLogging {
+class BaiduSite(val httpClient: HttpClient,
+                followUrl: Boolean) extends Crawler with LazyLogging {
 
   override protected val defaultHeaders: Array[Seq[(String, String)]] =
     super.defaultHeaders.map(headers => headers :+ ("User-Agent" -> "Baiduspider"))
@@ -64,7 +65,7 @@ class BaiduSite(val httpClient: HttpClient) extends Crawler with LazyLogging {
 
         val pages = doc.select("#page a").asScala
         val newsItemFutures = pages.take(BaiduSite.PAGE_LIMIT - 1).map { page =>
-          TimeUnit.MILLISECONDS.sleep(500)
+          TimeUnit.MILLISECONDS.sleep(100)
           fetchPageLinks(BaiduSite.BAIDU_SITE_HOST + page.attr("href"))
         }
         Future.sequence(newsItemFutures).map(_.flatten).onComplete {
@@ -111,10 +112,13 @@ class BaiduSite(val httpClient: HttpClient) extends Crawler with LazyLogging {
 
     val link = elem.select(".t").select("a").first()
     val href = link.attr("href")
-    val url = Option(Await.result(HttpClient.find302Location(httpClient, href, requestHeaders), 1.second)).getOrElse(href)
+    val url = if (followUrl) {
+      Option(Await.result(HttpClient.find302Location(httpClient, href, requestHeaders()), 1.second)).getOrElse(href)
+    } else {
+      href
+    }
 
     val title = link.text()
-
     val summary = elem.select(".c-abstract").text()
     val time = BaiduNews.dealTime(elem.select(".newTimeFactor_before_abs").text())
 

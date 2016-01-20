@@ -14,7 +14,7 @@ object SiteRoute extends BaseRoute {
       path("baidu") {
         post {
           entity(as[SearchRequest]) { request =>
-            val baidu = new BaiduSite(SystemUtils.httpClient)
+            val baidu = new BaiduSite(SystemUtils.httpClient, request.followUrl)
             val key = request.toParam
             complete(baidu.fetchItemList(key))
           }

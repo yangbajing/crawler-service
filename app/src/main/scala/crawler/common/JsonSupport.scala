@@ -1,6 +1,6 @@
 package crawler.common
 
-import crawler.enums.{ItemSource, QueryCond, SearchMethod, SearchSyntax}
+import crawler.enums.{ItemSource, QueryCond, SearchMethod}
 import crawler.util.http.TJsonSupport
 import org.json4s.Formats
 import org.json4s.ext.EnumNameSerializer
@@ -13,7 +13,6 @@ trait JsonSupport extends TJsonSupport {
   implicit val formats: Formats = defaultFormats +
     new EnumNameSerializer(ItemSource) +
     new EnumNameSerializer(SearchMethod) +
-    new EnumNameSerializer(SearchSyntax) +
     new EnumNameSerializer(QueryCond)
 }
 

@@ -11,7 +11,7 @@ object Build extends Build {
     shellPrompt := (s => Project.extract(s).currentProject.id + " > ")
   }
 
-  lazy val root = Project("crawler-service", file("."))
+  lazy val root = Project("crawler-high-search", file("."))
     .aggregate(app, util)
 
   ///////////////////////////////////////////////////////////////

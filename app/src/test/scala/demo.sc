@@ -3,6 +3,7 @@ import java.nio.file.{Paths, Files}
 import scala.collection.JavaConverters._
 
 import scala.io.Source
+
 val s =
   """crawler-news001    121.199.23.3
     |crawler-news002    121.199.4.6
@@ -63,10 +64,18 @@ val s =
     |crawler-news057    120.26.94.27
     |crawler-news058    120.26.93.221
     |crawler-news059    121.43.60.236""".stripMargin
-val iter = Source.fromString(s).getLines().map { v =>
+val ss = Source.fromString(s).getLines().map { v =>
   val ip = v.drop(19)
   val hostname = v.take(15)
-  val pad = (ip.length to 19).map(_ => ' ').mkString
-  ip + pad + hostname
-}
-Files.write(Paths.get("/tmp/ips.txt"), iter.toStream.asJava)
+  Seq(hostname, ip, "1核1G", "/usr/app/python <br> /home/sc/open-falcon/agent")
+    .mkString("| ", " | ", "  |")
+}.toStream
+
+val lines =
+  Stream(
+    Seq("hostname        ", "IP", "hardware", "path"),
+    Seq("----------------", "--", "--------", "----")
+  ).map(_.mkString("| ", "  | ", "  |")) #:::
+    ss
+
+Files.write(Paths.get("/tmp/crawler-news-hosts.txt"), lines.asJava)

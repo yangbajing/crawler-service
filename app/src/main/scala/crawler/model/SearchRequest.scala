@@ -1,18 +1,18 @@
 package crawler.model
 
-import crawler.enums.{QueryCond, SearchSyntax}
+import crawler.enums.QueryCond
 
 /**
   * Created by Yang Jing (yangbajing@gmail.com) on 2016-01-18.
   */
-case class SearchRequest(params: Seq[SearchParam]) {
+case class SearchRequest(params: Seq[SearchParam], followUrl: Boolean = true) {
 
   def toParam = params.map(_.toParam).mkString(" ")
 
 }
 
 case class SearchParam(value: String,
-                       syntax: Option[SearchSyntax.Value] = None,
+                       syntax: Option[String] = None,
                        cond: Option[QueryCond.Value] = None,
                        filetypeDoc: Seq[String] = Nil,
                        strict: Boolean = true) {
