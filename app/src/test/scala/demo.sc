@@ -64,18 +64,20 @@ val s =
     |crawler-news057    120.26.94.27
     |crawler-news058    120.26.93.221
     |crawler-news059    121.43.60.236""".stripMargin
-val ss = Source.fromString(s).getLines().map { v =>
-  val ip = v.drop(19)
-  val hostname = v.take(15)
-  Seq(hostname, ip, "1核1G", "/usr/app/python <br> /home/sc/open-falcon/agent")
-    .mkString("| ", " | ", "  |")
-}.toStream
+val lines = Source.fromString(s).getLines().map(_.split("    ")(0)).toStream
 
-val lines =
-  Stream(
-    Seq("hostname        ", "IP", "hardware", "path"),
-    Seq("----------------", "--", "--------", "----")
-  ).map(_.mkString("| ", "  | ", "  |")) #:::
-    ss
+//val ss = Source.fromString(s).getLines().map { v =>
+//  val ip = v.drop(19)
+//  val hostname = v.take(15)
+//  Seq(hostname, ip, "1核1G", "/usr/app/python <br> /home/sc/open-falcon/agent")
+//    .mkString("| ", " | ", "  |")
+//}.toStream
+//
+//val lines =
+//  Stream(
+//    Seq("hostname        ", "IP", "hardware", "path"),
+//    Seq("----------------", "--", "--------", "----")
+//  ).map(_.mkString("| ", "  | ", "  |")) #:::
+//    ss
 
 Files.write(Paths.get("/tmp/crawler-news-hosts.txt"), lines.asJava)

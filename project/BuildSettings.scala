@@ -45,7 +45,7 @@ object BuildSettings {
 
   lazy val _scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.7"
 
-  val verAkkaHttp = "2.0.1"
+  val verAkkaHttp = "2.0.2"
   lazy val _akkaHttp = ("com.typesafe.akka" %% "akka-http-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
 
   lazy val _scalatest = "org.scalatest" %% "scalatest" % "2.2.5" % "test"
