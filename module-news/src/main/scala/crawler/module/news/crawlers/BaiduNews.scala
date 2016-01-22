@@ -123,7 +123,7 @@ object BaiduNews {
       LocalDateTime.now()
     } else if (TIME_PATTERN.pattern.matcher(timeStr).matches()) {
       val s = timeStr.replaceAll( """年|月""", "-").replace("日", "")
-      LocalDateTime.parse(s, TimeUtils.formatterDate)
+      LocalDateTime.parse(s, TimeUtils.formatterDateMinus)
     } else if (FEW_HOURS_PATTERN.pattern.matcher(timeStr).matches()) {
       val now = LocalDateTime.now()
       val hour = dealFewHours(timeStr).toLong

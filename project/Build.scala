@@ -47,6 +47,7 @@ object Build extends Build {
     .settings(
       description := "crawler-site-search",
       libraryDependencies ++= Seq(
+        _activemqSTOMP,
         _cassandraDriverCore,
         _mongoScala)
     )
@@ -73,6 +74,7 @@ object Build extends Build {
     .settings(
       description := "util",
       libraryDependencies ++= Seq(
+        _activemqSTOMP % "provided",
         _cassandraDriverCore % "provided",
         _mongoScala % "provided",
         _akkaHttp % "provided",

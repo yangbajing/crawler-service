@@ -14,7 +14,6 @@ object BuildSettings {
       "-encoding", "utf8",
       "-unchecked",
       "-feature",
-//      "-Ylog-classpath",
       "-deprecation"
     ),
     javacOptions := Seq(
@@ -67,6 +66,8 @@ object BuildSettings {
   lazy val _logbackClassic = "ch.qos.logback" % "logback-classic" % "1.1.3"
 
   lazy val _cassandraDriverCore = "com.datastax.cassandra" % "cassandra-driver-core" % "2.2.0-rc3"
+
+  lazy val _activemqSTOMP = "org.apache.activemq" % "activemq-stomp" % "5.13.0"
 
 }
 
