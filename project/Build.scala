@@ -15,19 +15,19 @@ object Build extends Build {
 
   lazy val root = Project("crawler-high-search", file("."))
     .aggregate(
-      app,
-      consumerSiteSearch,
-      siteSearch, news,
+      appApi,
+      crawlerSiteSearch,
+      moduleSiteSearch, moduleNews,
       util)
 
   ///////////////////////////////////////////////////////////////
   // projects
   ///////////////////////////////////////////////////////////////
-  lazy val app = Project("app", file("app"))
-    .dependsOn(siteSearch % DependsConfigure, news % DependsConfigure, util % DependsConfigure)
+  lazy val appApi = Project("app-api", file("app-api"))
+    .dependsOn(moduleSiteSearch % DependsConfigure, moduleNews % DependsConfigure, util % DependsConfigure)
     .settings(basicSettings: _*)
     .settings(
-      description := "app",
+      description := "app-api",
       assemblyJarName in assembly := "crawler-app.jar",
       mainClass in assembly := Some("crawler.app.Main"),
       test in assembly := {},
@@ -41,28 +41,28 @@ object Build extends Build {
         _akkaHttp)
     )
 
-  lazy val consumerSiteSearch = Project("site-search-consumer", file("site-search-consumer"))
-    .dependsOn(siteSearch % DependsConfigure, util % DependsConfigure)
+  lazy val crawlerSiteSearch = Project("crawler-site-search", file("crawler-site-search"))
+    .dependsOn(moduleSiteSearch % DependsConfigure, util % DependsConfigure)
     .settings(basicSettings: _*)
     .settings(
-      description := "site-search-consumer",
+      description := "crawler-site-search",
       libraryDependencies ++= Seq(
         _cassandraDriverCore,
         _mongoScala)
     )
 
-  lazy val siteSearch = Project("site-search", file("site-search"))
+  lazy val moduleSiteSearch = Project("module-site-search", file("module-site-search"))
     .dependsOn(util % DependsConfigure)
     .settings(basicSettings: _*)
     .settings(
-      description := "site-search"
+      description := "module-site-search"
     )
 
-  lazy val news = Project("news", file("news"))
+  lazy val moduleNews = Project("module-news", file("module-news"))
     .dependsOn(util % DependsConfigure)
     .settings(basicSettings: _*)
     .settings(
-      description := "news",
+      description := "module-news",
       libraryDependencies ++= Seq(
         _cassandraDriverCore,
         _akkaActor)
