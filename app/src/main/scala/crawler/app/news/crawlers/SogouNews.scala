@@ -5,7 +5,7 @@ import java.net.URLEncoder
 import akka.util.Timeout
 import crawler.SystemUtils
 import crawler.enums.{ItemSource, SearchMethod}
-import crawler.model.{NewsItem, SearchResult}
+import crawler.app.news.model.{NewsItem, SearchResult}
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils
 import org.jsoup.Jsoup

@@ -3,7 +3,7 @@ package crawler.app.news.crawlers
 import com.typesafe.scalalogging.LazyLogging
 import crawler.app.news.NewsUtils
 import crawler.enums.ItemSource
-import crawler.model.{NewsPageItem, SearchResult}
+import crawler.app.news.model.{NewsPageItem, SearchResult}
 import crawler.util.Crawler
 import crawler.util.news.contextextractor.ContentExtractor
 import org.jsoup.helper.DataUtil

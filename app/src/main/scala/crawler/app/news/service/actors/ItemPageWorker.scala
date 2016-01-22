@@ -4,7 +4,7 @@ import akka.actor.Props
 import crawler.app.news.crawlers.NewsCrawler
 import crawler.commands.{ItemPageResult, StartFetchItemPage}
 import crawler.enums.ItemSource
-import crawler.model.NewsItem
+import crawler.app.news.model.NewsItem
 import crawler.util.actors.MetricActor
 
 import scala.util.{Failure, Success}

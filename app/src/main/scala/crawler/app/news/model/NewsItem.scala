@@ -1,9 +1,11 @@
-package crawler.model
+package crawler.app.news.model
 
 import java.time.LocalDateTime
 
 import com.datastax.driver.core.{UDTValue, UserType}
+import crawler.common.JsonSupport
 import crawler.util.time.TimeUtils
+import org.json4s.Extraction
 
 /**
   * 新闻详情
@@ -17,7 +19,14 @@ case class NewsItem(title: String,
                     // 摘要
                     `abstract`: String,
                     content: Option[String] = None,
-                    error: Option[String] = None)
+                    values: Seq[String] = Nil,
+                    error: Option[String] = None) {
+  def jsonPretty = {
+    import JsonSupport._
+    val jv = Extraction.decompose(this)
+    serialization.writePretty(jv)
+  }
+}
 
 object NewsItem {
   def toUDTValue(userType: UserType, ni: NewsItem): UDTValue = {

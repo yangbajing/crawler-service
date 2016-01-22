@@ -1,7 +1,7 @@
 package crawler.commands
 
 import crawler.enums.{SearchMethod, ItemSource}
-import crawler.model.{NewsPageItem, NewsItem, SearchResult}
+import crawler.app.news.model.{NewsPageItem, NewsItem, SearchResult}
 
 import scala.concurrent.duration.FiniteDuration
 

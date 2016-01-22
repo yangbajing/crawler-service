@@ -1,12 +1,13 @@
 package crawler.app.site
 
 import java.net.URLEncoder
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.scalalogging.LazyLogging
-import crawler.app.news.crawlers.BaiduNews
+import crawler.app.news.model.SearchRequest
+import crawler.app.site.model.{SiteItem, SiteResult}
 import crawler.enums.ItemSource
-import crawler.model.{NewsItem, SearchResult}
 import crawler.util.Crawler
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils
@@ -14,44 +15,40 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 import scala.collection.JavaConverters._
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
 /**
   * Created by Yang Jing (yangbajing@gmail.com) on 2016-01-18.
   */
 class BaiduSite(val httpClient: HttpClient,
-                followUrl: Boolean) extends Crawler with LazyLogging {
+                searchRequest: SearchRequest) extends Crawler with LazyLogging {
 
   override protected val defaultHeaders: Array[Seq[(String, String)]] =
     super.defaultHeaders.map(headers => headers :+ ("User-Agent" -> "Baiduspider"))
 
+  val values = searchRequest.params.map(_.value)
+
   /**
     * 抓取搜索页
     *
-    * @param key 搜索关键词
     * @return
     */
-  def fetchItemList(key: String)(implicit ec: ExecutionContext): Future[SearchResult] = {
-    val promise = Promise[Seq[NewsItem]]()
+  def fetchItemList()(implicit ec: ExecutionContext): Future[SiteResult] = {
+    val promise = Promise[Seq[SiteItem]]()
+    val key = searchRequest.toParam
 
     val url = BaiduSite.BAIDU_SITE_BASE_URL.format(URLEncoder.encode(key, "UTF-8"))
-    logger.debug("url: " + url)
+    logger.info(s"key: $key, url: $url")
 
-    val newsResultsFuture = fetchPage(url).map { resp =>
+    val newsResultsFuture = fetchPage(url).flatMap { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduSite.BAIDU_SITE_HOST).getElementById("wrapper_wrapper")
-
-      logger.debug(doc.toString + "\n\n\n")
-
       val now = TimeUtils.now()
       val contentNone = doc.select(".content_none")
 
-      logger.debug("contentNone: " + contentNone)
-
       if (!contentNone.isEmpty) {
         promise.success(Nil)
-        SearchResult(ItemSource.baiduSite, key, now, 0, Nil)
+        Future.successful(SiteResult(ItemSource.baiduSite, key, now, 0, Nil))
       } else {
         val wrapper = doc
         val countText = wrapper
@@ -69,6 +66,7 @@ class BaiduSite(val httpClient: HttpClient,
           TimeUnit.MILLISECONDS.sleep(100)
           fetchPageLinks(BaiduSite.BAIDU_SITE_HOST + page.attr("href"))
         }
+
         Future.sequence(newsItemFutures).map(_.flatten).onComplete {
           case Success(list) =>
             promise.success(list)
@@ -77,12 +75,8 @@ class BaiduSite(val httpClient: HttpClient,
             promise.success(Nil)
         }
 
-        SearchResult(
-          ItemSource.baiduSite,
-          key,
-          now,
-          count,
-          itemResults.map(parseNewsItem).toList)
+        Future.sequence(itemResults.map(parseSiteItem))
+          .map(items => SiteResult(ItemSource.baiduSite, key, now, count, items))
       }
     }
 
@@ -90,45 +84,69 @@ class BaiduSite(val httpClient: HttpClient,
       newsResult <- newsResultsFuture
       newsItems <- promise.future
     } yield {
-      newsResult.copy(news = newsResult.news ++ newsItems)
+      newsResult.copy(items = newsResult.items ++ newsItems)
     }
   }
 
-  def fetchPageLinks(url: String)(implicit ec: ExecutionContext): Future[Seq[NewsItem]] = {
-    fetchPage(url).map { resp =>
+  def fetchPageLinks(url: String)(implicit ec: ExecutionContext): Future[Seq[SiteItem]] = {
+    fetchPage(url).flatMap { resp =>
       val doc = Jsoup.parse(resp.getResponseBodyAsStream, "UTF-8", BaiduSite.BAIDU_SITE_HOST)
       if (doc.getElementById("content_none") != null) {
-        Nil
+        Future.successful(Nil)
       } else {
         val itemDiv = doc.getElementById("content_left")
         val itemResults = itemDiv.select(".result.c-container").asScala
-        itemResults.map(parseNewsItem).toList
+        val futures = itemResults.map(parseSiteItem)
+        Future.sequence(futures)
       }
     }
   }
 
-  def parseNewsItem(elem: Element): NewsItem = {
-    implicit val ec = ExecutionContext.Implicits.global
-
+  def parseSiteItem(elem: Element)(implicit ec: ExecutionContext): Future[SiteItem] = {
     val link = elem.select(".t").select("a").first()
     val href = link.attr("href")
-    val url = if (followUrl) {
-      Option(Await.result(HttpClient.find302Location(httpClient, href, requestHeaders()), 1.second)).getOrElse(href)
-    } else {
-      href
+
+    extractPageUrl(href).map { url =>
+      val title = link.text()
+
+      val sourceHostDesc = elem.select(".f13 a").first().text()
+      val source = sourceHostDesc.take(sourceHostDesc.indexOf('/'))
+
+      val abstractElem = elem.select(".c-abstract")
+      val summary = abstractElem.asScala.filterNot(e => e.attr("class").contains("newTimeFactor_before_abs")).map(_.text()).mkString
+
+      //    val summary = elem.select(".c-abstract").text()
+      val time = BaiduSite.dealTime(abstractElem.select(".newTimeFactor_before_abs").text())
+
+      SiteItem(title, url, source, time, summary, values)
     }
+  }
 
-    val title = link.text()
-    val summary = elem.select(".c-abstract").text()
-    val time = BaiduNews.dealTime(elem.select(".newTimeFactor_before_abs").text())
+  def extractPageUrl(href: String): Future[String] = {
+    implicit val ec = ExecutionContext.Implicits.global
 
-    NewsItem(title, url, ItemSource.baiduSite.toString, time, summary)
+    if (searchRequest.followUrl) {
+      HttpClient.find302Location(httpClient, href, requestHeaders()).map(v => if (v == null) href else v)
+    } else {
+      Future.successful(href)
+    }
   }
 
 }
 
 object BaiduSite {
+  // 抓取前５页
   val PAGE_LIMIT = 5
+
   val BAIDU_SITE_BASE_URL = "https://www.baidu.com/s?wd=%s&rsv_spt=1&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_n=2&rsv_sug3=1"
+
   val BAIDU_SITE_HOST = "https://www.baidu.com"
+
+  val TIME_PATTERN = """(\d{4})年(\d{1,2})月(\d{1,2})日""".r
+
+  def dealTime(timeStr: String): Option[LocalDateTime] = timeStr.substring(0, timeStr.indexOf('日') + 1) match {
+    case TIME_PATTERN(year, month, day) => Some(LocalDateTime.of(year.toInt, month.toInt, day.toInt, 0, 0))
+    case _ => None
+  }
+
 }

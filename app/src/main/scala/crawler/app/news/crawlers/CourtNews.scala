@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import crawler.SystemUtils
 import crawler.enums.ItemSource
-import crawler.model.{NewsItem, SearchResult}
+import crawler.app.news.model.{NewsItem, SearchResult}
 import crawler.util.Utils
 import crawler.util.http.HttpClient
 import crawler.util.time.TimeUtils

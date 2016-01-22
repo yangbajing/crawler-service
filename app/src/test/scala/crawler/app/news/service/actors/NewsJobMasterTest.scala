@@ -9,7 +9,7 @@ import crawler.app.news.crawlers.{NewsCrawler, BaiduNews}
 import crawler.app.news.service.NewsMaster
 import crawler.commands.{RequestSearchNews, SearchNews}
 import crawler.enums.{SearchMethod, ItemSource}
-import crawler.model.SearchResult
+import crawler.app.news.model.SearchResult
 import crawler.testsuite.ServiceSpec
 
 import scala.concurrent.duration._

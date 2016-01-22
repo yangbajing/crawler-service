@@ -3,7 +3,7 @@ package crawler.app.news.service
 import akka.pattern.ask
 import crawler.commands.{RequestSearchNews, SearchNews}
 import crawler.enums.{ItemSource, SearchMethod}
-import crawler.model.{NewsItem, SearchResult}
+import crawler.app.news.model.{NewsItem, SearchResult}
 import crawler.util.time.TimeUtils
 
 import scala.concurrent.Future

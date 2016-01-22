@@ -6,7 +6,7 @@ import com.datastax.driver.core.{PreparedStatement, Session, UDTValue}
 import com.typesafe.scalalogging.LazyLogging
 import crawler.SystemUtils
 import crawler.enums.{ItemSource, SearchMethod}
-import crawler.model.{NewsItem, NewsPage, SearchResult}
+import crawler.app.news.model.{NewsItem, NewsPage, SearchResult}
 import crawler.util.persist.CassandraPersists
 import crawler.util.time.TimeUtils
 

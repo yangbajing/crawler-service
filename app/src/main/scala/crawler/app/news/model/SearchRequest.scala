@@ -1,4 +1,4 @@
-package crawler.model
+package crawler.app.news.model
 
 import crawler.enums.QueryCond
 

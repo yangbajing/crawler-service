@@ -4,7 +4,7 @@ import akka.util.Timeout
 import crawler.app.site.BaiduSite
 import crawler.common.JsonSupport.formats
 import crawler.common.SearchSyntax
-import crawler.model.{SearchParam, SearchRequest}
+import crawler.app.news.model.{SearchParam, SearchRequest}
 import crawler.testsuite.ServiceSpec
 import crawler.util.http.HttpClient
 import org.json4s.Extraction
@@ -23,24 +23,20 @@ class BaiduSiteTest extends ServiceSpec {
   "BaiduSiteTest" should {
 
     "fetchItemList" in {
-      val baidu = new BaiduSite(HttpClient(), true)
-      val request = SearchRequest(
-        //        SearchParam("江苏华米数码科技有限公司", Some(SearchSyntax.Intitle)) ::
-        SearchParam("阿里巴巴kakakakaak", Some(SearchSyntax.Intitle)) ::
-          SearchParam("失信", syntax = Some(SearchSyntax.Intitle), strict = false) ::
+      val requestParams = SearchRequest(
+        SearchParam("晋渝地产", Some(SearchSyntax.Intitle)) ::
+          //        SearchParam("阿里巴巴kakakakaak", Some(SearchSyntax.Intitle)) ::
+          //          SearchParam("失信", syntax = Some(SearchSyntax.Intitle), strict = false) ::
           Nil
       )
+      val baidu = new BaiduSite(HttpClient(), requestParams)
 
-      val jv = Extraction.decompose(request)
-      println(Serialization.write(jv))
-
-      val key = request.toParam
-      val f = baidu.fetchItemList(key)
+      val key = requestParams.toParam
+      val f = baidu.fetchItemList()
       val result = Await.result(f, timeout.duration)
-      result.news.foreach(println)
-      println(result.source + " " + result.key)
-      println(result.news.size)
-      result.news must not be empty
+      result.items.foreach(v => println(v.jsonPretty))
+      println(result.items.size)
+      result.items must not be empty
     }
 
   }

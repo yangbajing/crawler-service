@@ -3,7 +3,7 @@ package crawler.app.news.service.actors
 import akka.actor.{ActorRef, PoisonPill, Props}
 import crawler.commands.{SearchNews, StartSearchNews}
 import crawler.enums.ItemSource
-import crawler.model.SearchResult
+import crawler.app.news.model.SearchResult
 import crawler.util.actors.MetricActor
 
 /**

@@ -2,7 +2,7 @@ package crawler.app.news.service.actors
 
 import akka.actor.Props
 import crawler.app.news.service.NewsDBRepo
-import crawler.model.{NewsPage, SearchResult}
+import crawler.app.news.model.{NewsPage, SearchResult}
 import crawler.util.actors.MetricActor
 
 /**

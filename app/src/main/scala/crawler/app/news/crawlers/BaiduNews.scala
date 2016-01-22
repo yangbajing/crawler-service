@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 import akka.util.Timeout
 import crawler.SystemUtils
 import crawler.enums.{ItemSource, SearchMethod}
-import crawler.model.{NewsItem, SearchResult}
+import crawler.app.news.model.{NewsItem, SearchResult}
 import crawler.util.http.HttpClient
 import crawler.util.news.contextextractor.ContentExtractor
 import crawler.util.time.TimeUtils

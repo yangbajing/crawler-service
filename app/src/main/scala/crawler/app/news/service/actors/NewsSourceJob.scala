@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, Cancellable, PoisonPill, Props}
 import crawler.app.news.service.NewsMaster
 import crawler.commands._
 import crawler.enums.{ItemSource, SearchMethod}
-import crawler.model.SearchResult
+import crawler.app.news.model.SearchResult
 import crawler.util.actors.MetricActor
 import crawler.util.time.TimeUtils
 
