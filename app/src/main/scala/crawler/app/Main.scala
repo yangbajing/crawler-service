@@ -6,6 +6,7 @@ import akka.http.scaladsl.Http
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
 import crawler.SystemUtils
+import crawler.app.routes.ApiRoutes
 import crawler.util.Utils
 
 import scala.util.{Failure, Success}

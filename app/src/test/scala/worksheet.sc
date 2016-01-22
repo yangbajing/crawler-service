@@ -1,6 +1,6 @@
 import java.time.LocalDateTime
 
-import crawler.app.site.BaiduSite
+import crawler.module.site.BaiduSite
 //BaiduSite.dealTime("2015年1月13日")
 //BaiduSite.dealTime("2015年1月1日")
 //BaiduSite.dealTime("2015年11月13日")

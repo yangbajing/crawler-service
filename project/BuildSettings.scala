@@ -14,6 +14,7 @@ object BuildSettings {
       "-encoding", "utf8",
       "-unchecked",
       "-feature",
+//      "-Ylog-classpath",
       "-deprecation"
     ),
     javacOptions := Seq(
@@ -46,13 +47,14 @@ object BuildSettings {
   lazy val _scalaReflect = "org.scala-lang" % "scala-reflect" % "2.11.7"
 
   val verAkkaHttp = "2.0.2"
+  lazy val _akkaStream = ("com.typesafe.akka" %% "akka-stream-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
   lazy val _akkaHttp = ("com.typesafe.akka" %% "akka-http-experimental" % verAkkaHttp).exclude("com.typesafe.akka", "akka-actor")
 
   lazy val _scalatest = "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
   lazy val _scalaLogging = ("com.typesafe.scala-logging" %% "scala-logging" % "3.1.0").exclude("org.scala-lang", "scala-reflect").exclude("org.slf4j", "slf4j-api")
 
-  lazy val _mongoScala = "org.mongodb.scala" %% "mongo-scala-driver" % "1.1.0-rc0"
+  lazy val _mongoScala = ("org.mongodb.scala" %% "mongo-scala-driver" % "1.1.0").exclude("com.typesafe.akka", "akka-actor")
 
   lazy val varJson4s = "3.3.0"
   lazy val _json4sJackson = "org.json4s" %% "json4s-jackson" % varJson4s
