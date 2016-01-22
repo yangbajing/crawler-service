@@ -20,9 +20,11 @@ object Main extends App with StrictLogging {
   import SystemUtils._
   import system.dispatcher
 
-  Files.write(Paths.get("app.pid"), Utils.getPid.getBytes(Utils.CHARSET))
+//  Files.write(Paths.get("app.pid"), Utils.getPid.getBytes(Utils.CHARSET))
 
   val config = ConfigFactory.load()
+
+  println(config.getString("crawler.network.server") + ":" + config.getInt("crawler.network.port"))
 
   Http().bindAndHandle(ApiRoutes(), config.getString("crawler.network.server"), config.getInt("crawler.network.port"))
     .onComplete {

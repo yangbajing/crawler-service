@@ -1,7 +1,7 @@
 import _root_.sbt.Keys._
 import _root_.sbt._
-import sbtassembly.AssemblyKeys._
-import sbtassembly.{MergeStrategy, PathList}
+import com.typesafe.sbt.SbtNativePackager.autoImport._
+import com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging
 
 object Build extends Build {
 
@@ -24,19 +24,23 @@ object Build extends Build {
   // projects
   ///////////////////////////////////////////////////////////////
   lazy val appApi = Project("app-api", file("app-api"))
+    .enablePlugins(JavaServerAppPackaging)
     .dependsOn(moduleSiteSearch % DependsConfigure, moduleNews % DependsConfigure, util % DependsConfigure)
     .settings(basicSettings: _*)
     .settings(
       description := "app-api",
-      assemblyJarName in assembly := "crawler-app.jar",
-      mainClass in assembly := Some("crawler.app.Main"),
-      test in assembly := {},
-      assemblyMergeStrategy in assembly := {
-        case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.discard
-        case x =>
-          val oldStrategy = (assemblyMergeStrategy in assembly).value
-          oldStrategy(x)
-      },
+      //      assemblyJarName in assembly := "crawler-app.jar",
+      //      test in assembly := {},
+      //      assemblyMergeStrategy in assembly := {
+      //        case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.discard
+      //        case x =>
+      //          val oldStrategy = (assemblyMergeStrategy in assembly).value
+      //          oldStrategy(x)
+      //      },
+      mainClass := Some("crawler.app.Main"),
+      maintainer := "Jing Yang <jing.yang@socialcredits.cn, yangbajing@gmail.com>",
+      packageSummary := "Crawler High Search API",
+      packageDescription := "一个高级爬虫异步多线程实时API",
       libraryDependencies ++= Seq(
         _akkaHttp)
     )

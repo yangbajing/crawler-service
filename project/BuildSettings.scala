@@ -6,7 +6,7 @@ object BuildSettings {
   lazy val basicSettings = Seq(
     version := "0.0.1",
     homepage := Some(new URL("https://github.com/yangbajing/crawler-service")),
-    organization := "me.yangbajing",
+    organization := "cn.socialcredits.crawler",
     organizationHomepage := Some(new URL("https://github.com/yangbajing/crawler-service")),
     startYear := Some(2015),
     scalaVersion := "2.11.7",
