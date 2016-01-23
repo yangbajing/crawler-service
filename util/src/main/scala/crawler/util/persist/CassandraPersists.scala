@@ -13,6 +13,12 @@ import scala.util.Try
  * CassandraPersists
  * Created by yangjing on 15-11-6.
  */
+abstract class CassandraPersists(nodes: Seq[String]) {
+  val cluster = {
+    Cluster.builder().addContactPoints(nodes: _*)
+  }
+}
+
 object CassandraPersists extends LazyLogging {
 
   val cluster = {
