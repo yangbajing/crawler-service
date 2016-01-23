@@ -6,7 +6,6 @@
         </encoder>
     </appender>
 
-    <logger name="akka" level="INFO"/>
     <logger name="crawler" level="DEBUG"/>
 
     <root level="INFO">

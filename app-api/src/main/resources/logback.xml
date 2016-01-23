@@ -11,8 +11,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Daily rollover with compression -->
             <fileNamePattern>logs/application-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <!-- keep 30 days worth of history -->
-            <maxHistory>30</maxHistory>
+            <!-- keep 60 days worth of history -->
+            <maxHistory>60</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread - %n%message%n%xException%n
