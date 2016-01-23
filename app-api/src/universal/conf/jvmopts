@@ -1,0 +1,3 @@
+-xmx2048m
+-xms2048m
+-file.encoding=UTF-8
